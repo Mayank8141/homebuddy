@@ -18,7 +18,7 @@ class _user_loginState extends State<user_login> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Welcome Back",style: TextStyle(fontSize: 16,color: Colors.black),)
+                Text("Welcome Back",style: TextStyle(fontSize: 16,color: Colors.black),),
                 Text("Welcome Back",style: TextStyle(fontSize: 16,color: Colors.black),)
 
               ],
