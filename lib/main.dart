@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:homebuddy/user_login_page.dart';
 
+import 'mytheme.dart';
+
 void main() {
   runApp(const MyApp());
 }
