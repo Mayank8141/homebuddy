@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'admin_app/admin_login.dart';
+
 class option_screen extends StatefulWidget {
   const option_screen({super.key});
 
@@ -97,7 +99,9 @@ class _option_screenState extends State<option_screen> {
 
                 // Terms text
                 InkWell(
-                  onTap: (){},
+                  onTap: (){
+                    //Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>admin_login()));
+                  },
                   child: Text (
                     //"By continuing, you agree to our Terms & Privacy Policy",
                     "Continue as Admin",

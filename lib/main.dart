@@ -1,6 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'admin_app/admin_dashboard.dart';
+import 'admin_app/admin_login.dart';
 import 'firebase_options.dart';
 import 'option_screen.dart';
 
@@ -20,7 +22,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner:false,
       title: 'Flutter Demo',
-      home:option_screen(),
+      home:admin_dashboard(),
     );
   }
 }
