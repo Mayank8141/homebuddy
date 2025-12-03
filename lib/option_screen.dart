@@ -100,7 +100,7 @@ class _option_screenState extends State<option_screen> {
                 // Terms text
                 InkWell(
                   onTap: (){
-                    //Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>admin_login()));
+                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>admin_login()));
                   },
                   child: Text (
                     //"By continuing, you agree to our Terms & Privacy Policy",

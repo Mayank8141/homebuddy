@@ -1,29 +1,28 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
-import 'admin_app/admin_dashboard.dart';
-import 'admin_app/admin_login.dart';
 import 'firebase_options.dart';
 import 'option_screen.dart';
 
-void main() async{
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // ⭐ REQUIRED
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner:false,
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
-      home:admin_dashboard(),
+      home: option_screen(),
     );
   }
 }
-
