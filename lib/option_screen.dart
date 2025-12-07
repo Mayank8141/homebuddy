@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:homebuddy/employe_app/employe_login.dart';
 
 import 'admin_app/admin_login.dart';
+import 'customer_app/customer_login.dart';
+import 'customer_app/customer_register.dart';
+import 'employe_app/employe_register.dart';
 
 class option_screen extends StatefulWidget {
   const option_screen({super.key});
@@ -23,16 +27,25 @@ class _option_screenState extends State<option_screen> {
               children: [
                 const SizedBox(height: 20),
                 // Logo
+                //const SizedBox(height: 20),
+
+// Logo Updated with Image Instead of Icon
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  height: 110,
+                  width: 110,
                   decoration: BoxDecoration(
-                    color: Colors.white,
                     borderRadius: BorderRadius.circular(20),
+                    color: Colors.white,
                   ),
-                  child: const Icon(Icons.design_services,
-                      color: Color(0xFF0A64F9), size: 40),
+                  padding: EdgeInsets.all(10),
+                  child: Image.asset(
+                    "assets/images/logo.png",  // <-- Place your logo in assets/images folder
+                    fit: BoxFit.contain,
+                  ),
                 ),
+
                 const SizedBox(height: 16),
+
 
                 // App name and subtitle
                 const Text(
@@ -67,7 +80,7 @@ class _option_screenState extends State<option_screen> {
                   iconColor: const Color(0xFF0A64F9),
                   onTap: () {
                     // Navigate to customer login
-                    //Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>CoustomerLogin()));
+                    Navigator.push(context, MaterialPageRoute(builder: (_)=>customer_register_screen()));
                   },
                 ),
                 const SizedBox(height: 16),
@@ -83,6 +96,7 @@ class _option_screenState extends State<option_screen> {
                   iconColor: const Color(0xFF00A86B),
                   onTap: () {
                     // Navigate to driver login
+                    Navigator.push(context, MaterialPageRoute(builder: (_)=>employe_register_screen()));
                   },
                 ),
                 const SizedBox(height: 30),
@@ -100,7 +114,7 @@ class _option_screenState extends State<option_screen> {
                 // Terms text
                 InkWell(
                   onTap: (){
-                    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_)=>admin_login()));
+                    Navigator.push(context, MaterialPageRoute(builder: (_)=>admin_login()));
                   },
                   child: Text (
                     //"By continuing, you agree to our Terms & Privacy Policy",

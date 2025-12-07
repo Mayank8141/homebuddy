@@ -1,14 +1,15 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 
-import 'firebase_options.dart';
-import 'option_screen.dart';
+import 'firebase_options.dart';   // This file is auto-generated after firebase setup
+import 'login.dart';
+import 'option_screen.dart';     // First screen of your app
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // ⭐ REQUIRED
+  WidgetsFlutterBinding.ensureInitialized();  // important for async firebase
 
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform, // Firebase config
   );
 
   runApp(const MyApp());
@@ -21,8 +22,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      home: option_screen(),
+      title: 'HomeBuddy',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      home: const login_screen(),   // Landing page
     );
   }
 }
