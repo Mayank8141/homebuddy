@@ -1,0 +1,9 @@
+{
+  "repoUrl": null,
+  "defaultBranch": "main",
+  "autoPush": false,
+  "autoFetch": true,
+  "commitStyle": "simple",
+  "customPrefix": null,
+  "setupDate": "2025-12-09T05:25:46.490Z"
+}
