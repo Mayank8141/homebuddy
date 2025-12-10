@@ -47,6 +47,7 @@ dependencies:
   shared_preferences: ^2.5.3
   image_picker: any
   fl_chart: ^1.1.1
+  google_fonts: ^6.0.0
 
 
 dev_dependencies:
