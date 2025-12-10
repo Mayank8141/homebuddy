@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:homebuddy/employe_app/employe_login.dart';
 
 import 'admin_app/admin_login.dart';
@@ -16,118 +17,98 @@ class option_screen extends StatefulWidget {
 class _option_screenState extends State<option_screen> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.blueAccent,
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 20),
-                // Logo
-                //const SizedBox(height: 20),
 
-// Logo Updated with Image Instead of Icon
-                Container(
-                  height: 110,
-                  width: 110,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(20),
-                    color: Colors.white,
-                  ),
-                  padding: EdgeInsets.all(10),
-                  child: Image.asset(
-                    "assets/images/logo.png",  // <-- Place your logo in assets/images folder
-                    fit: BoxFit.contain,
-                  ),
-                ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.black,
+        statusBarIconBrightness: Brightness.light, // icons light (white)
+      ),
 
-                const SizedBox(height: 16),
+      child: Scaffold(
+        backgroundColor: Colors.blueAccent,
 
+        body: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
 
-                // App name and subtitle
-                const Text(
-                  "HomeBuddy",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  "Fast Service",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
+                  const SizedBox(height: 20),
 
-                const SizedBox(height: 40),
-                const Text(
-                  "Continue as",
-                  style: TextStyle(color: Colors.white70, fontSize: 14),
-                ),
-                const SizedBox(height: 20),
-
-                // Customer Card
-                _roleCard(
-                  context,
-                  title: "Customer",
-                  subtitle: "Book Services",
-                  icon: Icons.person_outline,
-                  bgColor: Colors.white,
-                  iconBgColor: const Color(0xFFE9F0FF),
-                  iconColor: const Color(0xFF0A64F9),
-                  onTap: () {
-                    // Navigate to customer login
-                    Navigator.push(context, MaterialPageRoute(builder: (_)=>customer_register_screen()));
-                  },
-                ),
-                const SizedBox(height: 16),
-
-                // Driver Card
-                _roleCard(
-                  context,
-                  title: "Service Provider",
-                  subtitle: "Accept Service & earn money",
-                  icon: Icons.cleaning_services,
-                  bgColor: Colors.white,
-                  iconBgColor: const Color(0xFFE8FFF2),
-                  iconColor: const Color(0xFF00A86B),
-                  onTap: () {
-                    // Navigate to driver login
-                    Navigator.push(context, MaterialPageRoute(builder: (_)=>employe_register_screen()));
-                  },
-                ),
-                const SizedBox(height: 30),
-
-                // Features list
-                Column(
-                  children: const [
-                    _FeatureItem(text: "Real-time tracking"),
-                    _FeatureItem(text: "Secure payments"),
-                    _FeatureItem(text: "24/7 support"),
-                  ],
-                ),
-                const SizedBox(height: 30),
-
-                // Terms text
-                InkWell(
-                  onTap: (){
-                    Navigator.push(context, MaterialPageRoute(builder: (_)=>admin_login()));
-                  },
-                  child: Text (
-                    //"By continuing, you agree to our Terms & Privacy Policy",
-                    "Continue as Admin",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
+                  // ----------- Logo -------------
+                  Container(
+                    height: 110,
+                    width: 110,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      color: Colors.white,
+                    ),
+                    padding: EdgeInsets.all(10),
+                    child: Image.asset(
+                      "assets/images/logo.png",
+                      width: 100,
+                      height: 100,
+                      fit: BoxFit.contain,
                     ),
                   ),
-                )
 
-              ],
+                  const SizedBox(height: 16),
+
+                  // App Name & tag line
+                  const Text(
+                    "HomeBuddy",
+                    style: TextStyle(color: Colors.white,fontSize: 22,fontWeight: FontWeight.w600),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    "Fast Service",
+                    style: TextStyle(color: Colors.white70,fontSize: 14),
+                  ),
+
+                  const SizedBox(height: 40),
+                  const Text("Continue as",style: TextStyle(color: Colors.white70,fontSize: 14)),
+                  const SizedBox(height: 20),
+
+                  // ---------------- Customer Button ----------------
+                  _roleCard(
+                    context,
+                    title: "Customer",
+                    subtitle: "Book Services",
+                    icon: Icons.person_outline,
+                    bgColor: Colors.white,
+                    iconBgColor: const Color(0xFFE9F0FF),
+                    iconColor: const Color(0xFF0A64F9),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_)=>customer_register_screen())),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // ---------------- Service Provider Button ----------------
+                  _roleCard(
+                    context,
+                    title: "Service Provider",
+                    subtitle: "Accept Service & earn money",
+                    icon: Icons.cleaning_services,
+                    bgColor: Colors.white,
+                    iconBgColor: const Color(0xFFE8FFF2),
+                    iconColor: const Color(0xFF00A86B),
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_)=>employe_register_screen())),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Column(
+                    children: const [
+                      _FeatureItem(text: "Real-time tracking"),
+                      _FeatureItem(text: "Secure payments"),
+                      _FeatureItem(text: "24/7 support"),
+                    ],
+                  ),
+
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
           ),
         ),
@@ -135,8 +116,9 @@ class _option_screenState extends State<option_screen> {
     );
   }
 
+  // Role card widget
   static Widget _roleCard(
-      BuildContext context, {
+      BuildContext context,{
         required String title,
         required String subtitle,
         required IconData icon,
@@ -145,42 +127,33 @@ class _option_screenState extends State<option_screen> {
         required Color iconColor,
         required VoidCallback onTap,
       }) {
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
+        decoration: BoxDecoration(color: bgColor,borderRadius: BorderRadius.circular(16)),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: iconBgColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: iconColor, size: 28),
+              decoration: BoxDecoration(color: iconBgColor,borderRadius: BorderRadius.circular(12)),
+              child: Icon(icon,color: iconColor,size: 28),
             ),
             const SizedBox(width: 16),
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
+                  Text(title,style: const TextStyle(fontSize: 16,fontWeight: FontWeight.w600)),
                   const SizedBox(height: 4),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          fontSize: 13, color: Colors.black54)),
+                  Text(subtitle,style: const TextStyle(fontSize: 13,color: Colors.black54)),
                 ],
               ),
             ),
-            const Icon(Icons.arrow_forward_ios_rounded,
-                size: 18, color: Colors.black45),
+            const Icon(Icons.arrow_forward_ios_rounded,size: 18,color: Colors.black45),
           ],
         ),
       ),
@@ -190,7 +163,6 @@ class _option_screenState extends State<option_screen> {
 
 class _FeatureItem extends StatelessWidget {
   final String text;
-
   const _FeatureItem({required this.text});
 
   @override
@@ -200,14 +172,8 @@ class _FeatureItem extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Text(
-            "• ",
-            style: TextStyle(color: Colors.white, fontSize: 16  ),
-          ),
-          Text(
-            text,
-            style: const TextStyle(color: Colors.white70, fontSize: 14),
-          ),
+          const Text("• ",style: TextStyle(color: Colors.white,fontSize: 16)),
+          Text(text,style: const TextStyle(color: Colors.white70,fontSize: 14)),
         ],
       ),
     );

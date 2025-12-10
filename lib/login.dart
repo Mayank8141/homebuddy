@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Screens
@@ -29,10 +30,10 @@ class _login_screenState extends State<login_screen> {
   @override
   void initState() {
     super.initState();
-    checkLoggedUser(); // Auto Login here
+    checkLoggedUser();
   }
 
-  // ================= AUTO LOGIN =================
+  // ========================================= AUTO LOGIN =========================================
   Future<void> checkLoggedUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? role = prefs.getString("role");
@@ -44,7 +45,7 @@ class _login_screenState extends State<login_screen> {
     }
   }
 
-  // ================= LOGIN FUNCTION =================
+  // ========================================= LOGIN FUNCTION =====================================
   Future<void> login() async {
     if (emailCtrl.text.isEmpty || passwordCtrl.text.isEmpty) {
       showSnack("Enter Email & Password");
@@ -55,72 +56,49 @@ class _login_screenState extends State<login_screen> {
 
     try {
       UserCredential user = await _auth.signInWithEmailAndPassword(
-          email: emailCtrl.text.trim(),
-          password: passwordCtrl.text.trim()
+        email: emailCtrl.text.trim(),
+        password: passwordCtrl.text.trim(),
       );
 
       String uid = user.user!.uid;
       String email = emailCtrl.text.trim();
       SharedPreferences prefs = await SharedPreferences.getInstance();
 
-      // ===== ADMIN CHECK =====
-      var adminDoc = await _fireStore.collection("admin_details").doc(uid).get();
-
-      if (!adminDoc.exists) {
-        var adminQuery = await _fireStore
-            .collection("admin_details")
-            .where("email", isEqualTo: email)
-            .get();
-
-        if (adminQuery.docs.isNotEmpty) adminDoc = adminQuery.docs.first;
+      // ------------------ ADMIN ------------------
+      var admin = await _fireStore.collection("admin_details").doc(uid).get();
+      if (!admin.exists) {
+        var q = await _fireStore.collection("admin_details").where("email", isEqualTo: email).get();
+        if (q.docs.isNotEmpty) admin = q.docs.first;
       }
-
-      if (adminDoc.exists) {
+      if (admin.exists) {
         prefs.setString("role", "admin");
         goTo(admin_dashboard());
         return;
       }
 
-
-// ===== EMPLOYEE CHECK =====
-      var empDoc = await _fireStore.collection("employe_detail").doc(uid).get();
-
-      if (!empDoc.exists) {
-        var empQuery = await _fireStore
-            .collection("employe_detail")
-            .where("email", isEqualTo: email)
-            .get();
-
-        if (empQuery.docs.isNotEmpty) empDoc = empQuery.docs.first;
+      // ------------------ EMPLOYEE ------------------
+      var emp = await _fireStore.collection("employe_detail").doc(uid).get();
+      if (!emp.exists) {
+        var q = await _fireStore.collection("employe_detail").where("email", isEqualTo: email).get();
+        if (q.docs.isNotEmpty) emp = q.docs.first;
       }
-
-      if (empDoc.exists) {
+      if (emp.exists) {
         prefs.setString("role", "employee");
         goTo(employe_deshbord_screen());
         return;
       }
 
-
-// ===== CUSTOMER CHECK =====
-      var custDoc = await _fireStore.collection("customer_detail").doc(uid).get();
-
-      if (!custDoc.exists) {
-        var custQuery = await _fireStore
-            .collection("customer_detail")
-            .where("email", isEqualTo: email)
-            .get();
-
-        if (custQuery.docs.isNotEmpty) custDoc = custQuery.docs.first;
+      // ------------------ CUSTOMER ------------------
+      var cust = await _fireStore.collection("customer_detail").doc(uid).get();
+      if (!cust.exists) {
+        var q = await _fireStore.collection("customer_detail").where("email", isEqualTo: email).get();
+        if (q.docs.isNotEmpty) cust = q.docs.first;
       }
-
-      if (custDoc.exists) {
+      if (cust.exists) {
         prefs.setString("role", "customer");
         goTo(customer_home_screen());
         return;
       }
-
-      showSnack("No user found in any collection");
-
 
       showSnack("No user found in any collection");
 
@@ -131,49 +109,48 @@ class _login_screenState extends State<login_screen> {
     }
   }
 
-  // ================= Navigation =================
-  void goTo(Widget page) {
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
-  }
+  // Navigation
+  void goTo(Widget page) =>
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => page));
 
-  showSnack(String text) =>
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+  showSnack(String msg) =>
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 
-  // ================= UI =================
+  // ========================================= UI =========================================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFE8ECF7),
+    return AnnotatedRegion<SystemUiOverlayStyle>(         // <-- STATUS BAR ADDED HERE
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,               // Change color if needed
+        statusBarIconBrightness: Brightness.dark,         // Light/Dark based on BG
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFFEEF1F7),
 
-      body: Center(
-        child: SingleChildScrollView(
-          child: Container(
-            width: 360,
-            padding: const EdgeInsets.all(25),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(22),
-              boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 12, offset: Offset(0, 6))],
-            ),
-
+        body: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
 
-                Center(
-                  child: Text("Welcome Back", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Welcome Back!",
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
 
-                SizedBox(height: 6),
+                const SizedBox(height: 6),
 
-                Center(child: Text("Login to continue", style: TextStyle(color: Colors.grey))),
-                SizedBox(height: 35),
+                Text("Login to continue",
+                    style: TextStyle(color: Colors.grey.shade700, fontSize: 15)),
 
-                label("Email Address"),
-                inputField(controller: emailCtrl, hint: "example@gmail.com", icon: Icons.email_outlined, keyboard: TextInputType.emailAddress),
-                SizedBox(height: 20),
+                const SizedBox(height: 40),
 
-                label("Password"),
+                Align(alignment: Alignment.centerLeft, child: label("Email")),
+                inputField(controller: emailCtrl, hint: "example@gmail.com", icon: Icons.email_outlined),
+                const SizedBox(height: 20),
+
+                Align(alignment: Alignment.centerLeft, child: label("Password")),
                 TextField(
                   controller: passwordCtrl,
                   obscureText: !passwordVisible,
@@ -185,30 +162,35 @@ class _login_screenState extends State<login_screen> {
                   ),
                 ),
 
-                SizedBox(height: 15),
+                const SizedBox(height: 30),
 
                 SizedBox(
                   width: double.infinity,
-                  height: 52,
+                  height: 55,
                   child: ElevatedButton(
                     onPressed: isLoading ? null : login,
-                    style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurpleAccent),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.deepPurple,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
                     child: isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text("Login", style: TextStyle(fontSize: 17, color: Colors.white)),
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : const Text("Login", style: TextStyle(fontSize: 18, color: Colors.white)),
                   ),
                 ),
 
-                SizedBox(height: 25),
+                const SizedBox(height: 30),
 
-                Center(
-                  child: InkWell(
-                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => option_screen())),
-                    child: Text("Don't have an account? Register", style: TextStyle(color: Colors.deepPurple, decoration: TextDecoration.underline)),
+                InkWell(
+                  onTap: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => option_screen())),
+                  child: const Text(
+                    "Don't have an account? Register",
+                    style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.w500),
                   ),
                 ),
 
-                SizedBox(height: 10),
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -217,16 +199,23 @@ class _login_screenState extends State<login_screen> {
     );
   }
 
-  // ================= Widgets =================
-  Widget label(String text) => Text(text, style: TextStyle(fontSize: 14,fontWeight: FontWeight.w600));
-  Widget inputField({required TextEditingController controller, required String hint, required IconData icon, TextInputType keyboard = TextInputType.text}) {
-    return TextField(controller: controller, keyboardType: keyboard, decoration: inputDecoration(icon, hint));
+  // -------- Widgets --------
+  Widget label(String text) => Text(text,
+      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600));
+
+  Widget inputField({required TextEditingController controller, required String hint, required IconData icon}) {
+    return TextField(
+      controller: controller,
+      decoration: inputDecoration(icon, hint),
+    );
   }
+
   InputDecoration inputDecoration(IconData icon, String hint) => InputDecoration(
     prefixIcon: Icon(icon, color: Colors.deepPurple),
     hintText: hint,
     filled: true,
-    fillColor: Color(0xFFF3F4F6),
-    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+    fillColor: const Color(0xFFF6F6F8),
+    focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Colors.deepPurple)),
+    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
   );
 }
