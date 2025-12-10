@@ -10,7 +10,7 @@ import 'admin_users.dart';
 import 'admin_employe.dart';
 
 class admin_dashboard extends StatefulWidget {
-  const admin_dashboard({super.key});
+  const admin_dashboard({super.key, required String uid});
 
   @override
   State<admin_dashboard> createState() => _admin_dashboardState();

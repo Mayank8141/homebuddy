@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class employe_deshbord_screen extends StatefulWidget {
-  const employe_deshbord_screen({super.key});
+  const employe_deshbord_screen({super.key, required String uid});
 
   @override
   State<employe_deshbord_screen> createState() => _employe_deshbord_screenState();

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:homebuddy/employe_app/employe_login.dart';
 
 import 'admin_app/admin_login.dart';
-import 'customer_app/customer_login.dart';
 import 'customer_app/customer_register.dart';
 import 'employe_app/employe_register.dart';
 

@@ -231,7 +231,7 @@ class _admin_employe_listState extends State<admin_employe_list> {
         onTap: (index) {
           if (index == selectedIndex) return;
 
-          if (index == 0) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => admin_dashboard()));
+          if (index == 0) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => admin_dashboard(uid: '',)));
           if (index == 1) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => admin_user_list()));
           if (index == 2) return;
           if (index == 3) Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => admin_services()));

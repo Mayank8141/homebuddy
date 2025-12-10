@@ -53,7 +53,7 @@ class _admin_loginState extends State<admin_login> {
       if (isAdminValid) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => admin_dashboard()),
+          MaterialPageRoute(builder: (_) => admin_dashboard(uid: '',)),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
