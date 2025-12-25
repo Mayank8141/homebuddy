@@ -1,8 +1,52 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:homebuddy/admin_app/admin_analytics.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminAnalyticsPage extends StatelessWidget {
   const AdminAnalyticsPage({super.key});
+
+
+  Widget statCard(String title, IconData icon, Color color, Stream<QuerySnapshot> stream) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: stream,
+      builder: (context, snapshot) {
+        int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+
+        return Container(
+          height: 120,
+          padding: EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: LinearGradient(
+              colors: [color.withOpacity(.9), color.withOpacity(.65)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            boxShadow: [BoxShadow(color: color.withOpacity(.3), blurRadius: 10, offset: Offset(0, 4))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: Colors.white, size: 30),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  Text("$count", style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
+                  Text(title, style: TextStyle(color: Colors.white70, fontSize: 14)),
+                ],
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,26 +66,44 @@ class AdminAnalyticsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
-            /// TOP SUMMARY CARDS
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            GridView.count(
+              shrinkWrap: true,
+              physics: NeverScrollableScrollPhysics(),
+              crossAxisCount: 2,
+              crossAxisSpacing: 14,
+              mainAxisSpacing: 14,
+              childAspectRatio: 1.25,
               children: [
-                summaryCard("Total Revenue", "₹85,450", Colors.blue),
-                summaryCard("Orders", "540", Colors.green),
+                statCard("Total Revenue", Icons.currency_rupee, Colors.blue,
+                    FirebaseFirestore.instance.collection("customer_detail").snapshots()),
+                statCard("Bookings", Icons.calendar_month, Colors.green,
+                    FirebaseFirestore.instance.collection("employe_detail").snapshots()),
+                statCard("Users", Icons.people_alt, Colors.orange,
+                    FirebaseFirestore.instance.collection("customer_detail").snapshots()),
+                statCard("Providers", Icons.engineering, Colors.purple,
+                    FirebaseFirestore.instance.collection("employe_detail").snapshots()),
               ],
             ),
 
-            const SizedBox(height: 14),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                summaryCard("Users", "1,320", Colors.orange),
-                summaryCard("Providers", "90", Colors.purple),
-              ],
-            ),
-
+            /// TOP SUMMARY CARDS services
+        //     Row(
+        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //       children: [
+        //         summaryCard("Total Revenue", "₹85,450", Colors.blue),
+        //         summaryCard("Orders", "540", Colors.green),
+        //       ],
+        //     ),
+        //
+        //     const SizedBox(height: 14),
+        //
+        //     Row(
+        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        //       children: [
+        //         summaryCard("Users", "1,320", Colors.orange),
+        //         summaryCard("Providers", "90", Colors.purple),
+        //       ],
+        //     ),
+        //
             const SizedBox(height: 30),
             const Text("Monthly Revenue Growth",
                 style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
@@ -50,11 +112,11 @@ class AdminAnalyticsPage extends StatelessWidget {
             monthlyRevenueChart(),
 
             const SizedBox(height: 32),
-            const Text("Orders Comparison",
-                style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
+            // const Text("Orders Comparison",
+            //     style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+            // const SizedBox(height: 10),
 
-            ordersBarChart(),
+           // ordersBarChart(),
 
             const SizedBox(height: 32),
             const Text("Recent Activities",
@@ -66,7 +128,7 @@ class AdminAnalyticsPage extends StatelessWidget {
             recentActivity("Employee added", "25 mins ago"),
             recentActivity("Order Complete", "1 hr ago"),
             recentActivity("User joined", "3 hr ago"),
-          ],
+        ],
         ),
       ),
     );
@@ -142,35 +204,35 @@ class AdminAnalyticsPage extends StatelessWidget {
   }
 
   /*️⃣ Bar Chart - Orders Data */
-  Widget ordersBarChart() {
-    return Container(
-      height: 230,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-          color: Colors.white,borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: Colors.black12,blurRadius: 8)]),
-      child: BarChart(BarChartData(
-        borderData: FlBorderData(show:false),
-        gridData: FlGridData(show:false),
-        titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles:true,getTitlesWidget:(v,meta){
-                const list=["Mon","Tue","Wed","Thu","Fri","Sat"];
-                return Text(list[v.toInt()],style: const TextStyle(fontSize: 12));
-              })),
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles:false)),
-        ),
-        barGroups: [
-          bar(0,35), bar(1,48), bar(2,72), bar(3,60), bar(4,80), bar(5,65),
-        ],
-      )),
-    );
-  }
-
-  BarChartGroupData bar(int x,double y)=>BarChartGroupData(
-      x:x,
-      barRods:[ BarChartRodData(toY:y,color: Colors.deepPurple,borderRadius: BorderRadius.circular(6),width:18) ]
-  );
+  // Widget ordersBarChart() {
+  //   return Container(
+  //     height: 230,
+  //     padding: const EdgeInsets.all(16),
+  //     decoration: BoxDecoration(
+  //         color: Colors.white,borderRadius: BorderRadius.circular(18),
+  //         boxShadow: [BoxShadow(color: Colors.black12,blurRadius: 8)]),
+  //     child: BarChart(BarChartData(
+  //       borderData: FlBorderData(show:false),
+  //       gridData: FlGridData(show:false),
+  //       titlesData: FlTitlesData(
+  //         bottomTitles: AxisTitles(
+  //             sideTitles: SideTitles(showTitles:true,getTitlesWidget:(v,meta){
+  //               const list=["Mon","Tue","Wed","Thu","Fri","Sat"];
+  //               return Text(list[v.toInt()],style: const TextStyle(fontSize: 12));
+  //             })),
+  //         leftTitles: AxisTitles(sideTitles: SideTitles(showTitles:false)),
+  //       ),
+  //       barGroups: [
+  //         bar(0,35), bar(1,48), bar(2,72), bar(3,60), bar(4,80), bar(5,65),
+  //       ],
+  //     )),
+  //   );
+  // }
+  //
+  // BarChartGroupData bar(int x,double y)=>BarChartGroupData(
+  //     x:x,
+  //     barRods:[ BarChartRodData(toY:y,color: Colors.deepPurple,borderRadius: BorderRadius.circular(6),width:18) ]
+  // );
 
   /*️⃣ Recent logs UI */
   Widget recentActivity(String title,String time){

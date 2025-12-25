@@ -35,7 +35,7 @@ class _admin_dashboardState extends State<admin_dashboard> {
     if (doc.exists) {
       setState(() {
         adminName = doc["name"] ?? "Admin";
-        adminEmail = doc["email"] ?? "";
+        adminEmail = doc["email"] ?? "admin@gmail.com";
         adminImage = doc["profile"] ?? "";
       });
     }

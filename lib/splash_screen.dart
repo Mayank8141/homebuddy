@@ -1,46 +1,46 @@
-import 'package:flutter/material.dart';
 import 'dart:async';
-import 'login.dart';
+import 'package:flutter/material.dart';
+import 'auth_wrapper.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
 
   late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _fadeAnimation;
+  late Animation<double> _scale;
+  late Animation<double> _fade;
 
   @override
   void initState() {
     super.initState();
 
-    // Animation Controller
     _controller = AnimationController(
-      duration: Duration(seconds: 2),
       vsync: this,
+      duration: const Duration(seconds: 2),
     );
 
-    // Logo Scale Animation
-    _scaleAnimation = Tween<double>(begin: 0.4, end: 1.0)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
+    _scale = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
+    );
 
-    // Fade Animation
-    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
+    _fade = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
 
     _controller.forward();
 
-    // After animation wait 3 seconds → go next
-    Timer(Duration(seconds: 4), () {
+    // ⏳ After splash → AuthWrapper
+    Timer(const Duration(seconds: 3), () {
+      if (!mounted) return;
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => login_screen()),
+        MaterialPageRoute(builder: (_) => const AuthWrapper()),
       );
     });
   }
@@ -55,43 +55,26 @@ class _SplashScreenState extends State<SplashScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-
       body: Center(
         child: FadeTransition(
-          opacity: _fadeAnimation,
+          opacity: _fade,
           child: ScaleTransition(
-            scale: _scaleAnimation,
+            scale: _scale,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
-                // YOUR LOGO
-                //Icon(Icons.home_filled, size: 95, color: Colors.white),
-
-                SizedBox(height: 22),
-
-                // Text(
-                //   "HomeBuddy",
-                //   style: TextStyle(
-                //     color: Colors.white,
-                //     fontSize: 32,
-                //     fontWeight: FontWeight.bold,
-                //     letterSpacing: 1,
-                //   ),
-                // ),
-
                 Image.asset(
                   "assets/images/splash.png",
-                  width: 300,
-                  height: 300,),
-
-                SizedBox(height: 8),
-
-                Text(
+                  width: 240,
+                  height: 240,
+                ),
+                const SizedBox(height: 12),
+                const Text(
                   "Best Home Services App",
                   style: TextStyle(
-                    color: Colors.white70,
                     fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.black54,
                   ),
                 ),
               ],

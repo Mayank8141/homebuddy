@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../login.dart';
 
@@ -9,307 +8,454 @@ class employe_register_screen extends StatefulWidget {
   const employe_register_screen({super.key});
 
   @override
-  State<employe_register_screen> createState() => _employe_register_screenState();
+  State<employe_register_screen> createState() =>
+      _employe_register_screenState();
 }
 
 class _employe_register_screenState extends State<employe_register_screen> {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  final TextEditingController nameCtrl = TextEditingController();
+  final TextEditingController emailCtrl = TextEditingController();
+  final TextEditingController passwordCtrl = TextEditingController();
 
-  bool passwordVisible = false;
-  bool agreeTerms = false;
+  bool loading = false;
+  bool _obscurePassword = true;
 
-  // ---------------- Controllers ----------------
-  TextEditingController nameCtrl = TextEditingController();
-  TextEditingController emailCtrl = TextEditingController();
-  TextEditingController phoneCtrl = TextEditingController();
-  TextEditingController addressCtrl = TextEditingController();
-  TextEditingController passwordCtrl = TextEditingController();
-  TextEditingController visitchargeCtrl = TextEditingController();
+  // ================= USERNAME CHECK =================
+  Future<bool> isUsernameAvailable(String name) async {
+    final snap = await _firestore
+        .collection("employe_detail")
+        .where("name", isEqualTo: name.trim())
+        .limit(1)
+        .get();
 
-  String? selectedService;
-  String? selectedCity;
+    return snap.docs.isEmpty;
+  }
 
-  // ---------------- Register User with Firebase Auth + Firestore ----------------
-  Future<void> registerEmployee() async {
+  Future<void> register() async {
     if (nameCtrl.text.isEmpty ||
         emailCtrl.text.isEmpty ||
-        phoneCtrl.text.isEmpty ||
-        visitchargeCtrl.text.isEmpty ||
-        selectedCity == null ||
-        selectedService == null ||
-        addressCtrl.text.isEmpty ||
-        passwordCtrl.text.length < 6 ||
-        !agreeTerms) {
-
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Fill all fields, min 6 char password & accept terms!"))
+        passwordCtrl.text.length < 6) {
+      showSnack(
+        passwordCtrl.text.length < 6
+            ? "Password must be at least 6 characters"
+            : "Please fill all fields",
+        Colors.orange,
+        Icons.warning_amber_rounded,
       );
       return;
     }
 
+    // ✅ GMAIL ONLY VALIDATION
+    if (!emailCtrl.text.trim().toLowerCase().endsWith("@gmail.com")) {
+      showSnack(
+        "Only gmail.com email is allowed",
+        Colors.red,
+        Icons.error_outline,
+      );
+      return;
+    }
+
+    setState(() => loading = true);
+
     try {
-      // Create email-password account
-      UserCredential userCred = await _auth.createUserWithEmailAndPassword(
+      // ✅ USERNAME AVAILABILITY CHECK
+      final available = await isUsernameAvailable(nameCtrl.text);
+      if (!available) {
+        showSnack(
+          "Username already available",
+          Colors.red,
+          Icons.error_outline,
+        );
+        setState(() => loading = false);
+        return;
+      }
+
+      UserCredential cred = await _auth.createUserWithEmailAndPassword(
         email: emailCtrl.text.trim(),
         password: passwordCtrl.text.trim(),
       );
 
-      String uid = userCred.user!.uid;
-
-      // Store employee data in Firestore
-      await _firestore.collection("employe_detail").doc(uid).set({
-        "uid": uid,
+      await _firestore.collection("employe_detail").doc(cred.user!.uid).set({
+        "uid": cred.user!.uid,
         "name": nameCtrl.text.trim(),
         "email": emailCtrl.text.trim(),
-        "phone": phoneCtrl.text.trim(),
-        "city_id": selectedCity,
-        "service_id": selectedService,
-        "visit_charge": visitchargeCtrl.text.trim(),
-        "address": addressCtrl.text.trim(),
-        "created_at": Timestamp.now(),
+        "profileCompleted": false,
+        "createdAt": Timestamp.now(),
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Employee Registered Successfully!"))
-      );
+      if (mounted) {
+        showSnack(
+          "Account created successfully!",
+          Colors.green,
+          Icons.check_circle,
+        );
 
-      //Navigator.pop(context); // or move to employee dashboard screen
-      Navigator.push(context,  MaterialPageRoute(builder: (_)=>login_screen()));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => login_screen()),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      String message;
+      switch (e.code) {
+        case 'weak-password':
+          message = 'Password is too weak';
+          break;
+        case 'email-already-in-use':
+          message = 'Email is already registered';
+          break;
+        case 'invalid-email':
+          message = 'Invalid email address';
+          break;
+        default:
+          message = e.message ?? 'Registration failed';
+      }
 
+      showSnack(message, Colors.red, Icons.error_outline);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: $e"))
-      );
+      showSnack(e.toString(), Colors.red, Icons.error_outline);
+    }
+
+    if (mounted) {
+      setState(() => loading = false);
     }
   }
 
+  // ================= COMMON SNACK =================
+  void showSnack(String text, Color color, IconData icon) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(text)),
+          ],
+        ),
+        backgroundColor: color,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  // ================= IMPROVED UI =================
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-    return AnnotatedRegion<SystemUiOverlayStyle>(         // <-- STATUS BAR ADDED HERE
-        value: const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,               // Change color if needed
-          statusBarIconBrightness: Brightness.dark,         // Light/Dark based on BG
-        ),
-
-        child:  Scaffold(
-      backgroundColor: const Color(0xFFEEF1F7),
-
+    return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
+          physics: const BouncingScrollPhysics(),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
 
-              maxWidth: 420,     // width limit only
-            ),
-
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30), // SIDE SPACE
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-
-                children: [
-
-                  Center(
-                    child: Text(
-                      "Employee Registration",
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                    ),
+                // Back Button with styled container
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[100],
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                  Center(
-                    child: Text(
-                      "Create your employee account",
-                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                    ),
+                  child: IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                    color: Colors.black87,
                   ),
+                ),
 
-                  const SizedBox(height: 28),
+                const SizedBox(height: 32),
 
-                  label("Full Name"),
-                  textField(controller: nameCtrl, hint: "John Doe", icon: Icons.person_outline),
-                  SizedBox(height: 14),
+                // Header with better typography
+                const Text(
+                  "Create Account",
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                    letterSpacing: -0.5,
+                  ),
+                ),
 
-                  label("Email"),
-                  textField(controller: emailCtrl, hint: "example@gmail.com", icon: Icons.email_outlined,
-                      keyboard: TextInputType.emailAddress),
-                  SizedBox(height: 14),
+                const SizedBox(height: 8),
 
-                  label("Phone Number"),
-                  textField(controller: phoneCtrl, hint: "9876543210", icon: Icons.phone_outlined,
-                      keyboard: TextInputType.phone),
-                  SizedBox(height: 14),
+                Text(
+                  "Sign up to get started",
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
 
-                  label("Select Service"),
-                  StreamBuilder(
-                    stream: _firestore.collection("services").snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return SizedBox(height: 45, child: Center(child: CircularProgressIndicator()));
-                      }
+                const SizedBox(height: 40),
 
-                      return DropdownButtonFormField<String>(
-                        value: selectedService,
-                        items: snapshot.data!.docs.map((d) => DropdownMenuItem(
-                          value: d.id,
-                          child: Text(d["name"]),
-                        )).toList(),
-                        onChanged: (v) => setState(() => selectedService = v),
-
-                        // ⚠ Decoration Added here
-                        decoration: InputDecoration(
-                          hintText: "Select Service",
-                          prefixIcon: Icon(Icons.cleaning_services, color: Colors.deepPurple),
-                          filled: true,
-                          fillColor: Color(0xFFF3F4F6),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
+                // Enhanced circular avatar with gradient and shadow
+                Center(
+                  child: Container(
+                    width: 110,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF1ABC9C),
+                          const Color(0xFF16A085),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF1ABC9C).withOpacity(0.3),
+                          blurRadius: 20,
+                          offset: const Offset(0, 8),
                         ),
-                      );
-                    },
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.person_add_alt_1_rounded,
+                      size: 50,
+                      color: Colors.white,
+                    ),
                   ),
+                ),
 
-                  SizedBox(height: 14),
+                const SizedBox(height: 48),
 
-                  label("City"),
-                  StreamBuilder(
-                    stream: _firestore.collection("cities").snapshots(),
-                    builder: (context, snapshot) {
-                      if (!snapshot.hasData) {
-                        return SizedBox(height: 50, child: Center(child: CircularProgressIndicator()));
-                      }
+                // Styled TextField - Full Name
+                TextField(
+                  controller: nameCtrl,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Full Name",
+                    hintText: "Enter your full name",
+                    prefixIcon: const Icon(Icons.person_outline_rounded, size: 22),
+                    labelStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
+                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF1ABC9C),
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
+                  ),
+                ),
 
-                      return DropdownButtonFormField<String>(
-                        value: selectedCity,
-                        items: snapshot.data!.docs.map((d) => DropdownMenuItem(
-                          value: d.id,
-                          child: Text(d["name"]),
-                        )).toList(),
-                        onChanged: (v) => setState(() => selectedCity = v),
+                const SizedBox(height: 20),
 
-                        // 🔥 Added Decoration Here
-                        decoration: InputDecoration(
-                          hintText: "Select City",
-                          prefixIcon: Icon(Icons.location_city, color: Colors.deepPurple),
-                          filled: true,
-                          fillColor: Color(0xFFF3F4F6),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
-                          ),
+                // Styled TextField - Email
+                TextField(
+                  controller: emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Email",
+                    hintText: "yourname@gmail.com",
+                    prefixIcon: const Icon(Icons.email_outlined, size: 22),
+                    labelStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
+                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF1ABC9C),
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Styled TextField - Password
+                TextField(
+                  controller: passwordCtrl,
+                  obscureText: _obscurePassword,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    hintText: "Minimum 6 characters",
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 22),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        color: Colors.grey[600],
+                        size: 22,
+                      ),
+                      onPressed: () =>
+                          setState(() => _obscurePassword = !_obscurePassword),
+                    ),
+                    labelStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
+                    hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
+                    filled: true,
+                    fillColor: Colors.grey[50],
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide.none,
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: BorderSide(color: Colors.grey[200]!),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16),
+                      borderSide: const BorderSide(
+                        color: Color(0xFF1ABC9C),
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 18,
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Enhanced Create Account Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 56,
+                  child: ElevatedButton(
+                    onPressed: loading ? null : register,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1ABC9C),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      disabledBackgroundColor: Colors.grey[300],
+                    ),
+                    child: loading
+                        ? const SizedBox(
+                      height: 24,
+                      width: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                        : const Text(
+                      "Create Account",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Sign In Link
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Already have an account? ",
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontSize: 15,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (_) => login_screen()),
+                      ),
+                      child: const Text(
+                        "Sign In",
+                        style: TextStyle(
+                          color: Color(0xFF1ABC9C),
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
                         ),
-                      );
-                    },
-                  ),
-
-                  SizedBox(height: 14),
-
-                  label("Visit Charge"),
-                  textField(controller: visitchargeCtrl, hint: "Enter price", icon: Icons.currency_rupee),
-                  SizedBox(height: 14),
-
-                  label("Address"),
-                  textField(controller: addressCtrl, hint: "House No, Area, City", icon: Icons.location_on),
-                  SizedBox(height: 14),
-
-                  label("Password"),
-                  passwordField(),
-                  SizedBox(height: 8),
-                  Text("Minimum 6 characters", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                  SizedBox(height: 12),
-
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: agreeTerms,
-                        onChanged:(v)=>setState(()=>agreeTerms=v!),
-                        activeColor: Colors.deepPurple,
                       ),
-                      Expanded(child: Text("I agree to Terms & Privacy Policy")),
-                    ],
-                  ),
-
-                  SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                      onPressed: registerEmployee,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.deepPurple,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      ),
-                      child: Text("Register Now", style: TextStyle(fontSize: 17, color: Colors.white)),
                     ),
-                  ),
+                  ],
+                ),
 
-                  SizedBox(height: 18),
-                  Center(
-                    child: InkWell(
-                      onTap: ()=>Navigator.push(context,
-                          MaterialPageRoute(builder:(_)=>login_screen())),
-                      child: Text(
-                        "Already have an account? Login",
-                        style: TextStyle(color: Colors.deepPurple, fontWeight: FontWeight.w600),
+                const SizedBox(height: 16),
+
+                // Terms & Privacy
+                Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      "By signing up, you agree to our\nTerms of Service and Privacy Policy",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 13,
+                        height: 1.4,
                       ),
                     ),
                   ),
+                ),
 
-                  SizedBox(height: 15),
-                ],
-              ),
+                const SizedBox(height: 32),
+              ],
             ),
           ),
         ),
       ),
-    )
     );
   }
 
-
-  //--------------- UI Components ---------------
-
-  Widget label(String text)=> Text(text,style: TextStyle(fontSize:14,fontWeight:FontWeight.w600));
-
-  Widget textField({required TextEditingController controller,required String hint,required IconData icon,TextInputType keyboard=TextInputType.text}){
-    return TextField(
-      controller: controller,
-      keyboardType: keyboard,
-      decoration: inputDec(icon,hint),
-    );
+  @override
+  void dispose() {
+    nameCtrl.dispose();
+    emailCtrl.dispose();
+    passwordCtrl.dispose();
+    super.dispose();
   }
-
-  Widget passwordField(){
-    return TextField(
-      controller: passwordCtrl,
-      obscureText: !passwordVisible,
-      decoration: inputDec(Icons.lock_outline,"Create password").copyWith(
-        suffixIcon: IconButton(
-          icon: Icon(passwordVisible?Icons.visibility:Icons.visibility_off,color:Colors.grey),
-          onPressed: ()=> setState(()=>passwordVisible=!passwordVisible),
-        ),
-      ),
-    );
-  }
-
-  Widget dropdown({required String? value,required List<DropdownMenuItem<String>> items,required Function(String?) onChanged}){
-    return DropdownButtonFormField<String>(
-      value: value,
-      items: items,
-      onChanged: onChanged,
-      decoration: inputDec(Icons.arrow_drop_down,"Select"),
-    );
-  }
-
-  InputDecoration inputDec(IconData icon,String hint)=> InputDecoration(
-    prefixIcon: Icon(icon,color:Colors.deepPurple),
-    hintText: hint,
-    filled:true,
-    fillColor:Color(0xFFF3F4F6),
-    border:OutlineInputBorder(borderRadius:BorderRadius.circular(10),borderSide:BorderSide.none),
-  );
 }
