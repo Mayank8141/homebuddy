@@ -9,6 +9,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../login.dart';
+import 'customer_aboutus.dart';
 import 'customer_bookings_history.dart';
 import 'customer_notification.dart';
 
@@ -729,7 +730,14 @@ class _customer_profileState extends State<customer_profile>
           _buildMenuItem(
             Icons.info_outline_rounded,
             "About",
-                () {},
+                () {Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => AboutPage(
+                      //customerId: widget.uid, // 👈 pass logged-in user id
+                    ),
+                  ),
+                );},
           ),
         ],
       ),

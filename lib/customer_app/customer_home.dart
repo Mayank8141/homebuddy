@@ -330,6 +330,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'customer_amployee_servicelist.dart';
+import 'customer_categories_page.dart';
 import 'customer_notification.dart';
 import 'customer_profile.dart';
 
@@ -576,19 +577,19 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
               overflow: TextOverflow.ellipsis,
             ),
           ),
-          TextButton(
-            onPressed: () {
-              // Change location
-            },
-            child: Text(
-              "Change",
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: const Color(0xFF00BFA5),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
+          // TextButton(
+          //   onPressed: () {
+          //     // Change location
+          //   },
+          //   child: Text(
+          //     "Change",
+          //     style: GoogleFonts.inter(
+          //       fontSize: 13,
+          //       color: const Color(0xFF00BFA5),
+          //       fontWeight: FontWeight.w600,
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
@@ -822,28 +823,28 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
                   const SizedBox(height: 22),
 
                   // CTA BUTTON
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.white,
-                      foregroundColor: const Color(0xFF00BFA5),
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 28, vertical: 14),
-                    ),
-                    onPressed: () {
-                      // Scroll to services or open categories
-                    },
-                    child: Text(
-                      "Explore Services",
-                      style: GoogleFonts.inter(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
+                  // ElevatedButton(
+                  //   style: ElevatedButton.styleFrom(
+                  //     backgroundColor: Colors.white,
+                  //     foregroundColor: const Color(0xFF00BFA5),
+                  //     elevation: 0,
+                  //     shape: RoundedRectangleBorder(
+                  //       borderRadius: BorderRadius.circular(14),
+                  //     ),
+                  //     padding: const EdgeInsets.symmetric(
+                  //         horizontal: 28, vertical: 14),
+                  //   ),
+                  //   onPressed: () {
+                  //     // Scroll to services or open categories
+                  //   },
+                  //   child: Text(
+                  //     "Explore Services",
+                  //     style: GoogleFonts.inter(
+                  //       fontSize: 15,
+                  //       fontWeight: FontWeight.w700,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
@@ -902,7 +903,16 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CustomerCategoriesPage(
+                        customerId: widget.uid,
+                      ),
+                    ),
+                  );
+                },
                 child: Text(
                   "See All",
                   style: GoogleFonts.inter(
@@ -912,6 +922,7 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
                   ),
                 ),
               ),
+
             ],
           ),
         ),
@@ -922,7 +933,8 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
               return _buildCategoriesShimmer();
             }
 
-            var services = snapshot.data!.docs;
+            var services = snapshot.data!.docs.take(6).toList();
+
 
             return Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -1100,6 +1112,12 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
           'icon': Icons.format_paint_rounded,
           'color': const Color(0xFFF3E5F5),
           'iconColor': const Color(0xFF9C27B0),
+        };
+      case "gardening":
+        return {
+          'icon': Icons.local_florist,
+          'color': const Color(0xFFFFF9C4),
+          'iconColor': const Color(0xFFFBC02D),
         };
       default:
         return {
