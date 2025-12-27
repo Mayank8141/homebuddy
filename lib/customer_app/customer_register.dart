@@ -115,8 +115,7 @@ class _customer_register_screenState extends State<customer_register_screen> {
 
     if (addressCtrl.text.isEmpty ||
         selectedCity == null ||
-        passwordCtrl.text.length < 6 ||
-        !agreeTerms) {
+        passwordCtrl.text.length < 6) {
       showMsg("Please fill all fields correctly", Colors.orange);
       return;
     }
@@ -180,7 +179,6 @@ class _customer_register_screenState extends State<customer_register_screen> {
       setState(() => loading = false);
     }
   }
-
   // ================= UI =================
   void showMsg(String msg, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(

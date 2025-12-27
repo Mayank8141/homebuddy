@@ -91,7 +91,7 @@ class _option_screenState extends State<option_screen> with SingleTickerProvider
                             ),
                             padding: const EdgeInsets.all(16),
                             child: Image.asset(
-                              "assets/images/logo.png",
+                              "assets/images/logo1.png",
                               fit: BoxFit.contain,
                             ),
                           ),

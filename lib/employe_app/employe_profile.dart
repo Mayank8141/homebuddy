@@ -982,42 +982,42 @@ class _EmployeProfileState extends State<EmployeProfile> {
                       const SizedBox(height: 32),
 
                       // Stats Cards
-                      if (completed)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: _statCard(
-                                  Icons.calendar_today,
-                                  "12",
-                                  "Bookings",
-                                  const Color(0xFF1ABC9C),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _statCard(
-                                  Icons.check_circle_outline,
-                                  "8",
-                                  "Completed",
-                                  const Color(0xFF1ABC9C),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _statCard(
-                                  Icons.star_outline,
-                                  "4.8",
-                                  "Rating",
-                                  const Color(0xFF1ABC9C),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                      const SizedBox(height: 32),
+                      // if (completed)
+                      //   Padding(
+                      //     padding: const EdgeInsets.symmetric(horizontal: 24),
+                      //     child: Row(
+                      //       children: [
+                      //         Expanded(
+                      //           child: _statCard(
+                      //             Icons.calendar_today,
+                      //             "12",
+                      //             "Bookings",
+                      //             const Color(0xFF1ABC9C),
+                      //           ),
+                      //         ),
+                      //         const SizedBox(width: 12),
+                      //         Expanded(
+                      //           child: _statCard(
+                      //             Icons.check_circle_outline,
+                      //             "8",
+                      //             "Completed",
+                      //             const Color(0xFF1ABC9C),
+                      //           ),
+                      //         ),
+                      //         const SizedBox(width: 12),
+                      //         Expanded(
+                      //           child: _statCard(
+                      //             Icons.star_outline,
+                      //             "4.8",
+                      //             "Rating",
+                      //             const Color(0xFF1ABC9C),
+                      //           ),
+                      //         ),
+                      //       ],
+                      //     ),
+                      //   ),
+                      //
+                      // const SizedBox(height: 32),
 
                       // Personal Information
                       if (completed)
@@ -1131,13 +1131,13 @@ class _EmployeProfileState extends State<EmployeProfile> {
                                 ),
                               ),
                               const SizedBox(height: 16),
-                              _menuTile(
-                                Icons.history,
-                                "Booking History",
-                                    () {
-                                  // Navigate to booking history
-                                },
-                              ),
+                              // _menuTile(
+                              //   Icons.history,
+                              //   "Booking History",
+                              //       () {
+                              //     // Navigate to booking history
+                              //   },
+                              // ),
                               _menuTile(
                                 Icons.logout,
                                 "Logout",

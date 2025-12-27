@@ -1,46 +1,460 @@
 import 'package:flutter/material.dart';
-import 'package:fl_chart/fl_chart.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:homebuddy/admin_app/admin_analytics.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AdminAnalyticsPage extends StatelessWidget {
   const AdminAnalyticsPage({super.key});
 
+  // ================= SHIMMER CARD =================
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    );
+  }
 
-  Widget statCard(String title, IconData icon, Color color, Stream<QuerySnapshot> stream) {
-    return StreamBuilder<QuerySnapshot>(
-      stream: stream,
+  Widget _buildShimmerChart() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey[300]!,
+      highlightColor: Colors.grey[100]!,
+      child: Container(
+        height: 280,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+        ),
+      ),
+    );
+  }
+
+  // ================= ANALYTICS CARD =================
+  Widget analyticsCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    String? subtitle,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16), // ⬅ reduced padding
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          colors: [color, color.withOpacity(0.7)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: color.withOpacity(0.3),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start, // ⬅ FIX
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10), // ⬅ reduced
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: Colors.white, size: 26),
+          ),
+
+          const SizedBox(height: 10),
+
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 26, // ⬅ slightly reduced
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 4),
+
+          Text(
+            title,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          if (subtitle != null) ...[
+            const SizedBox(height: 2),
+            Text(
+              subtitle,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+
+  // ================= TOTAL REVENUE =================
+  Widget totalRevenueCard() {
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection("bill_details")
+          .where("payment_status", isEqualTo: "Completed")
+          .get(),
       builder: (context, snapshot) {
-        int count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildShimmerCard();
+        }
+
+        double total = 0;
+        int count = 0;
+
+        if (snapshot.hasData) {
+          count = snapshot.data!.docs.length;
+          for (var doc in snapshot.data!.docs) {
+            total += (doc["total_amount"] ?? 0).toDouble();
+          }
+        }
+
+        return analyticsCard(
+          title: "Total Revenue",
+          value: "₹${total.toStringAsFixed(0)}",
+          icon: Icons.currency_rupee_rounded,
+          color: const Color(0xFF3B82F6),
+          subtitle: "$count transactions",
+        );
+      },
+    );
+  }
+
+  // ================= COUNT CARD =================
+  Widget countCard(
+      String title,
+      IconData icon,
+      Color color,
+      String collection,
+      ) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection(collection).snapshots(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildShimmerCard();
+        }
+
+        final count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+
+        return analyticsCard(
+          title: title,
+          value: "$count",
+          icon: icon,
+          color: color,
+        );
+      },
+    );
+  }
+
+  // ================= PENDING PAYMENTS CARD =================
+  Widget pendingPaymentsCard() {
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection("bill_details")
+          .where("payment_status", isEqualTo: "Pending")
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildShimmerCard();
+        }
+
+        double total = 0;
+        int count = 0;
+
+        if (snapshot.hasData) {
+          count = snapshot.data!.docs.length;
+          for (var doc in snapshot.data!.docs) {
+            total += (doc["total_amount"] ?? 0).toDouble();
+          }
+        }
+
+        return analyticsCard(
+          title: "Pending Payments",
+          value: "₹${total.toStringAsFixed(0)}",
+          icon: Icons.pending_actions_rounded,
+          color: const Color(0xFFF59E0B),
+          subtitle: "$count pending bills",
+        );
+      },
+    );
+  }
+
+  // ================= MONTHLY REVENUE CHART =================
+  Widget monthlyRevenueChart() {
+    return FutureBuilder<QuerySnapshot>(
+      future: FirebaseFirestore.instance
+          .collection("bill_details")
+          .where("payment_status", isEqualTo: "Completed")
+          .get(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _buildShimmerChart();
+        }
+
+        if (!snapshot.hasData) {
+          return Container(
+            height: 280,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: const Center(child: Text("No data available")),
+          );
+        }
+
+        Map<int, double> monthlyTotals = {};
+
+        for (var doc in snapshot.data!.docs) {
+          final date = (doc["created_at"] as Timestamp).toDate();
+          final month = date.month;
+
+          monthlyTotals[month] =
+              (monthlyTotals[month] ?? 0) + (doc["total_amount"] ?? 0).toDouble();
+        }
+
+        if (monthlyTotals.isEmpty) {
+          return Container(
+            height: 280,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.04),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[100],
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.show_chart_rounded,
+                      size: 48,
+                      color: Colors.grey[400],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No revenue data yet",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+
+        final spots = monthlyTotals.entries.map((e) {
+          return FlSpot(e.key.toDouble(), e.value / 1000);
+        }).toList();
+
+        spots.sort((a, b) => a.x.compareTo(b.x));
 
         return Container(
-          height: 120,
-          padding: EdgeInsets.all(16),
+          height: 280,
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: LinearGradient(
-              colors: [color.withOpacity(.9), color.withOpacity(.65)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [BoxShadow(color: color.withOpacity(.3), blurRadius: 10, offset: Offset(0, 4))],
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Icon(icon, color: Colors.white, size: 30),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-
-                  Text("$count", style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.bold)),
-                  Text(title, style: TextStyle(color: Colors.white70, fontSize: 14)),
+                  const Text(
+                    "Revenue Trend",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1ABC9C).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      "in thousands",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1ABC9C),
+                      ),
+                    ),
+                  ),
                 ],
-              )
+              ),
+              const SizedBox(height: 20),
+              Expanded(
+                child: LineChart(
+                  LineChartData(
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      horizontalInterval: 1,
+                      getDrawingHorizontalLine: (value) {
+                        return FlLine(
+                          color: Colors.grey[200],
+                          strokeWidth: 1,
+                        );
+                      },
+                    ),
+                    borderData: FlBorderData(show: false),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 40,
+                          getTitlesWidget: (value, meta) {
+                            return Text(
+                              '₹${value.toInt()}k',
+                              style: TextStyle(
+                                color: Colors.grey[600],
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      rightTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (v, _) {
+                            const months = [
+                              "",
+                              "Jan",
+                              "Feb",
+                              "Mar",
+                              "Apr",
+                              "May",
+                              "Jun",
+                              "Jul",
+                              "Aug",
+                              "Sep",
+                              "Oct",
+                              "Nov",
+                              "Dec"
+                            ];
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8),
+                              child: Text(
+                                months[v.toInt()],
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    lineBarsData: [
+                      LineChartBarData(
+                        isCurved: true,
+                        curveSmoothness: 0.3,
+                        color: const Color(0xFF1ABC9C),
+                        barWidth: 3,
+                        dotData: FlDotData(
+                          show: true,
+                          getDotPainter: (spot, percent, barData, index) {
+                            return FlDotCirclePainter(
+                              radius: 4,
+                              color: Colors.white,
+                              strokeWidth: 2,
+                              strokeColor: const Color(0xFF1ABC9C),
+                            );
+                          },
+                        ),
+                        belowBarData: BarAreaData(
+                          show: true,
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF1ABC9C).withOpacity(0.3),
+                              const Color(0xFF1ABC9C).withOpacity(0.05),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                        ),
+                        spots: spots,
+                      ),
+                    ],
+                    minY: 0,
+                  ),
+                ),
+              ),
             ],
           ),
         );
@@ -48,209 +462,230 @@ class AdminAnalyticsPage extends StatelessWidget {
     );
   }
 
+  // ================= QUICK STATS ROW =================
+  Widget quickStatsRow() {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildQuickStat(
+            "Completed",
+            "booking_details",
+            {"status": "Completed"},
+            Icons.check_circle_rounded,
+            const Color(0xFF10B981),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildQuickStat(
+            "Pending",
+            "booking_details",
+            {"status": "Pending"},
+            Icons.pending_rounded,
+            const Color(0xFFF59E0B),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickStat(
+      String title,
+      String collection,
+      Map<String, dynamic> where,
+      IconData icon,
+      Color color,
+      ) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection(collection)
+          .where(where.keys.first, isEqualTo: where.values.first)
+          .snapshots(),
+      builder: (context, snapshot) {
+        final count = snapshot.hasData ? snapshot.data!.docs.length : 0;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "$count",
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // ================= UI =================
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xffF7F9FC),
-
+      backgroundColor: const Color(0xFFF8F9FD),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: Colors.white,
-        title: const Text("Analytics Dashboard",
-            style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold,fontSize: 20)),
-        iconTheme: const IconThemeData(color: Colors.black),
-      ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GridView.count(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              crossAxisSpacing: 14,
-              mainAxisSpacing: 14,
-              childAspectRatio: 1.25,
-              children: [
-                statCard("Total Revenue", Icons.currency_rupee, Colors.blue,
-                    FirebaseFirestore.instance.collection("customer_detail").snapshots()),
-                statCard("Bookings", Icons.calendar_month, Colors.green,
-                    FirebaseFirestore.instance.collection("employe_detail").snapshots()),
-                statCard("Users", Icons.people_alt, Colors.orange,
-                    FirebaseFirestore.instance.collection("customer_detail").snapshots()),
-                statCard("Providers", Icons.engineering, Colors.purple,
-                    FirebaseFirestore.instance.collection("employe_detail").snapshots()),
-              ],
-            ),
-
-            /// TOP SUMMARY CARDS services
-        //     Row(
-        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //       children: [
-        //         summaryCard("Total Revenue", "₹85,450", Colors.blue),
-        //         summaryCard("Orders", "540", Colors.green),
-        //       ],
-        //     ),
-        //
-        //     const SizedBox(height: 14),
-        //
-        //     Row(
-        //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        //       children: [
-        //         summaryCard("Users", "1,320", Colors.orange),
-        //         summaryCard("Providers", "90", Colors.purple),
-        //       ],
-        //     ),
-        //
-            const SizedBox(height: 30),
-            const Text("Monthly Revenue Growth",
-                style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-
-            monthlyRevenueChart(),
-
-            const SizedBox(height: 32),
-            // const Text("Orders Comparison",
-            //     style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
-            // const SizedBox(height: 10),
-
-           // ordersBarChart(),
-
-            const SizedBox(height: 32),
-            const Text("Recent Activities",
-                style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
-            const SizedBox(height: 10),
-
-            recentActivity("New order placed", "2 mins ago"),
-            recentActivity("Service Updated", "10 mins ago"),
-            recentActivity("Employee added", "25 mins ago"),
-            recentActivity("Order Complete", "1 hr ago"),
-            recentActivity("User joined", "3 hr ago"),
-        ],
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          color: Colors.black87,
+          onPressed: () => Navigator.pop(context),
         ),
-      ),
-    );
-  }
-
-  /*️⃣ Summary Card */
-  Widget summaryCard(String title, String value, Color color) {
-    return Container(
-      width: 160,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: LinearGradient(
-            colors: [color.withOpacity(.9), color.withOpacity(.6)],
-            begin: Alignment.topLeft,end: Alignment.bottomRight),
-        boxShadow: [
-          BoxShadow(color: color.withOpacity(.4), blurRadius: 10, offset: const Offset(0, 5))
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.analytics, color: Colors.white, size: 28),
-          const SizedBox(height: 15),
-          Text(value, style: const TextStyle(color: Colors.white,fontSize: 26,fontWeight: FontWeight.bold)),
-          const SizedBox(height: 6),
-          Text(title, style: const TextStyle(color: Colors.white70,fontSize: 14)),
-        ],
-      ),
-    );
-  }
-
-  /*️⃣ Line Chart - Monthly Revenue */
-  Widget monthlyRevenueChart() {
-    return Container(
-      height: 230,
-      decoration: BoxDecoration(
-          color: Colors.white,borderRadius: BorderRadius.circular(18),
-          boxShadow: [BoxShadow(color: Colors.black12,blurRadius: 8)]),
-      padding: const EdgeInsets.all(16),
-
-      child: LineChart(LineChartData(
-        backgroundColor: Colors.white,
-        titlesData: FlTitlesData(
-          bottomTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: true, getTitlesWidget: (value, meta) {
-                const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul"];
-                return Text(months[value.toInt()],style: const TextStyle(fontSize: 12));
-              })),
-          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        title: const Text(
+          "Analytics Dashboard",
+          style: TextStyle(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            letterSpacing: 0.2,
+          ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded, color: Colors.black87),
+            onPressed: () {
+              // Refresh analytics
+            },
+          ),
+        ],
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Refresh data
+          await Future.delayed(const Duration(seconds: 1));
+        },
+        color: const Color(0xFF1ABC9C),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Main Stats Grid
+              GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.0,
+                children: [
+                  totalRevenueCard(),
+                  pendingPaymentsCard(),
+                  countCard(
+                    "Total Bookings",
+                    Icons.calendar_month_rounded,
+                    const Color(0xFF10B981),
+                    "booking_details",
+                  ),
+                  countCard(
+                    "Service Providers",
+                    Icons.engineering_rounded,
+                    const Color(0xFF8B5CF6),
+                    "employe_detail",
+                  ),
+                ],
+              ),
 
-        gridData: FlGridData(show: false),
-        borderData: FlBorderData(show: false),
+              const SizedBox(height: 24),
 
-        lineBarsData: [
-          LineChartBarData(
-            isCurved: true,
-            color: Colors.blue,
-            barWidth: 4,
-            dotData: FlDotData(show: true),
-            belowBarData: BarAreaData(show: true,color: Colors.blue.withOpacity(.2)),
-            spots: const [
-              FlSpot(0,30), FlSpot(1,40), FlSpot(2,55),
-              FlSpot(3,70), FlSpot(4,95), FlSpot(5,80), FlSpot(6,110),
+              // Quick Stats
+              quickStatsRow(),
+
+              const SizedBox(height: 32),
+
+              // Chart Title
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Monthly Revenue",
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1ABC9C).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      children: const [
+                        Icon(
+                          Icons.trending_up_rounded,
+                          color: Color(0xFF1ABC9C),
+                          size: 16,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          "Growth",
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF1ABC9C),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Revenue Chart
+              monthlyRevenueChart(),
+              const SizedBox(height: 24),
             ],
-          )
-        ],
-      )),
-    );
-  }
-
-  /*️⃣ Bar Chart - Orders Data */
-  // Widget ordersBarChart() {
-  //   return Container(
-  //     height: 230,
-  //     padding: const EdgeInsets.all(16),
-  //     decoration: BoxDecoration(
-  //         color: Colors.white,borderRadius: BorderRadius.circular(18),
-  //         boxShadow: [BoxShadow(color: Colors.black12,blurRadius: 8)]),
-  //     child: BarChart(BarChartData(
-  //       borderData: FlBorderData(show:false),
-  //       gridData: FlGridData(show:false),
-  //       titlesData: FlTitlesData(
-  //         bottomTitles: AxisTitles(
-  //             sideTitles: SideTitles(showTitles:true,getTitlesWidget:(v,meta){
-  //               const list=["Mon","Tue","Wed","Thu","Fri","Sat"];
-  //               return Text(list[v.toInt()],style: const TextStyle(fontSize: 12));
-  //             })),
-  //         leftTitles: AxisTitles(sideTitles: SideTitles(showTitles:false)),
-  //       ),
-  //       barGroups: [
-  //         bar(0,35), bar(1,48), bar(2,72), bar(3,60), bar(4,80), bar(5,65),
-  //       ],
-  //     )),
-  //   );
-  // }
-  //
-  // BarChartGroupData bar(int x,double y)=>BarChartGroupData(
-  //     x:x,
-  //     barRods:[ BarChartRodData(toY:y,color: Colors.deepPurple,borderRadius: BorderRadius.circular(6),width:18) ]
-  // );
-
-  /*️⃣ Recent logs UI */
-  Widget recentActivity(String title,String time){
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-          color: Colors.white,borderRadius: BorderRadius.circular(14),
-          boxShadow: [BoxShadow(color: Colors.black12,blurRadius:6)]),
-      child: Row(
-        children: [
-          CircleAvatar(backgroundColor: Colors.blue.shade100,
-              child: const Icon(Icons.notifications,color: Colors.blue)),
-
-          const SizedBox(width: 12),
-          Expanded(child: Text(title,style: const TextStyle(fontWeight: FontWeight.w600))),
-          Text(time,style: const TextStyle(color: Colors.grey,fontSize: 12)),
-        ],
+          ),
+        ),
       ),
     );
   }
