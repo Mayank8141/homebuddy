@@ -23,6 +23,34 @@ class _employe_register_screenState extends State<employe_register_screen> {
   bool loading = false;
   bool _obscurePassword = true;
 
+
+  // ================= ADMIN NOTIFICATION =================
+  Future<void> notifyAdminNewProvider({
+    required String providerId,
+    required String providerName,
+  }) async {
+    final adminSnapshot =
+    await _firestore.collection("admin_details").get();
+
+    for (var admin in adminSnapshot.docs) {
+      final docRef = _firestore.collection("notifications").doc();
+
+      await docRef.set({
+        "notification_id": docRef.id,
+        "title": "New Provider Registered",
+        "message": "$providerName has registered as a service provider",
+        "receiver_id": admin.id,
+        "receiver_type": "admin",
+        "sender_id": providerId,
+        "sender_type": "employee",
+        "is_read": false,
+        "created_at": FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+
+
   // ================= USERNAME CHECK =================
   Future<bool> isUsernameAvailable(String name) async {
     final snap = await _firestore
@@ -85,6 +113,11 @@ class _employe_register_screenState extends State<employe_register_screen> {
         "profileCompleted": false,
         "createdAt": Timestamp.now(),
       });
+      //  SEND NOTIFICATION TO ADMIN
+      await notifyAdminNewProvider(
+        providerId: cred.user!.uid,
+        providerName: nameCtrl.text.trim(),
+      );
 
       if (mounted) {
         showSnack(

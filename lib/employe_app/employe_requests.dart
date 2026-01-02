@@ -289,10 +289,503 @@
 //   }
 // }
 
+//
+// import 'package:flutter/material.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+//
+// class EmployeeRequestsScreen extends StatefulWidget {
+//   final String uid;
+//   const EmployeeRequestsScreen({super.key, required this.uid});
+//
+//   @override
+//   State<EmployeeRequestsScreen> createState() =>
+//       _EmployeeRequestsScreenState();
+// }
+//
+// class _EmployeeRequestsScreenState extends State<EmployeeRequestsScreen> {
+//   @override
+//   Widget build(BuildContext context) {
+//     return Scaffold(
+//       backgroundColor: const Color(0xFFF8F9FD),
+//       appBar: AppBar(
+//         elevation: 0,
+//         backgroundColor: Colors.white,
+//         centerTitle: true,
+//         title: const Text(
+//           "Service Requests",
+//           style: TextStyle(
+//             color: Colors.black87,
+//             fontWeight: FontWeight.bold,
+//             fontSize: 20,
+//             letterSpacing: 0.2,
+//           ),
+//         ),
+//         leading: IconButton(
+//           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+//           color: Colors.black87,
+//           onPressed: () => Navigator.pop(context),
+//         ),
+//       ),
+//
+//       // 🔥 FETCH REQUESTS FROM FIRESTORE
+//       body: StreamBuilder<QuerySnapshot>(
+//         stream: FirebaseFirestore.instance
+//             .collection("booking_details")
+//             .where("employe_id", isEqualTo: widget.uid)
+//             .where("status", isEqualTo: "Pending")
+//             .snapshots(),
+//         builder: (context, snapshot) {
+//           if (snapshot.connectionState == ConnectionState.waiting) {
+//             return const Center(
+//               child: CircularProgressIndicator(
+//                 color: Color(0xFF1ABC9C),
+//               ),
+//             );
+//           }
+//           if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+//             return Center(
+//               child: Column(
+//                 mainAxisAlignment: MainAxisAlignment.center,
+//                 children: [
+//                   Container(
+//                     padding: const EdgeInsets.all(24),
+//                     decoration: BoxDecoration(
+//                       color: Colors.grey[100],
+//                       shape: BoxShape.circle,
+//                     ),
+//                     child: Icon(
+//                       Icons.inbox_rounded,
+//                       size: 64,
+//                       color: Colors.grey[400],
+//                     ),
+//                   ),
+//                   const SizedBox(height: 24),
+//                   Text(
+//                     "No Requests Found",
+//                     style: TextStyle(
+//                       fontSize: 18,
+//                       fontWeight: FontWeight.w600,
+//                       color: Colors.grey[700],
+//                     ),
+//                   ),
+//                   const SizedBox(height: 8),
+//                   Text(
+//                     "You're all caught up!",
+//                     style: TextStyle(
+//                       fontSize: 14,
+//                       color: Colors.grey[500],
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             );
+//           }
+//
+//           final bookings = snapshot.data!.docs;
+//
+//           return ListView.builder(
+//             physics: const BouncingScrollPhysics(),
+//             padding: const EdgeInsets.all(20),
+//             itemCount: bookings.length,
+//             itemBuilder: (context, index) {
+//               final booking = bookings[index];
+//
+//               return requestCard(
+//                 bookingId: booking.id,
+//                 customerId: booking["customer_id"],
+//                 serviceId: booking["service_id"],
+//                 time: booking["service_date"]
+//                     .toDate()
+//                     .toString()
+//                     .substring(0, 16),
+//                 problem: booking["problem_description"] ?? "",
+//               );
+//             },
+//           );
+//         },
+//       ),
+//     );
+//   }
+//
+//   // ============================================================
+//   // REQUEST CARD
+//   // ============================================================
+//   Widget requestCard({
+//     required String bookingId,
+//     required String customerId,
+//     required String serviceId,
+//     required String time,
+//     required String problem,
+//   }) {
+//     return Container(
+//       margin: const EdgeInsets.only(bottom: 16),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(20),
+//         boxShadow: [
+//           BoxShadow(
+//             color: Colors.black.withOpacity(0.06),
+//             blurRadius: 12,
+//             offset: const Offset(0, 4),
+//           ),
+//         ],
+//       ),
+//       child: Padding(
+//         padding: const EdgeInsets.all(20),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             /// 🔥 SERVICE NAME
+//             FutureBuilder<DocumentSnapshot>(
+//               future: FirebaseFirestore.instance
+//                   .collection("services")
+//                   .doc(serviceId)
+//                   .get(),
+//               builder: (context, serviceSnap) {
+//                 if (serviceSnap.connectionState == ConnectionState.waiting) {
+//                   return Row(
+//                     children: [
+//                       SizedBox(
+//                         height: 16,
+//                         width: 16,
+//                         child: CircularProgressIndicator(
+//                           strokeWidth: 2,
+//                           color: Colors.grey[400],
+//                         ),
+//                       ),
+//                       const SizedBox(width: 8),
+//                       Text(
+//                         "Loading service...",
+//                         style: TextStyle(
+//                           fontSize: 14,
+//                           color: Colors.grey[600],
+//                         ),
+//                       ),
+//                     ],
+//                   );
+//                 }
+//
+//                 if (!serviceSnap.hasData || !serviceSnap.data!.exists) {
+//                   return const Text(
+//                     "Service not found",
+//                     style: TextStyle(
+//                       fontSize: 18,
+//                       fontWeight: FontWeight.bold,
+//                       color: Colors.black87,
+//                     ),
+//                   );
+//                 }
+//
+//                 final data = serviceSnap.data!.data() as Map<String, dynamic>;
+//                 final serviceName =
+//                     data["name"] ?? data["service_name"] ?? "Unknown Service";
+//
+//                 return Row(
+//                   children: [
+//                     Container(
+//                       padding: const EdgeInsets.all(8),
+//                       decoration: BoxDecoration(
+//                         color: const Color(0xFF1ABC9C).withOpacity(0.1),
+//                         borderRadius: BorderRadius.circular(10),
+//                       ),
+//                       child: const Icon(
+//                         Icons.home_repair_service_rounded,
+//                         color: Color(0xFF1ABC9C),
+//                         size: 20,
+//                       ),
+//                     ),
+//                     const SizedBox(width: 12),
+//                     Expanded(
+//                       child: Text(
+//                         serviceName,
+//                         style: const TextStyle(
+//                           fontSize: 18,
+//                           fontWeight: FontWeight.bold,
+//                           color: Colors.black87,
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 );
+//               },
+//             ),
+//
+//             const SizedBox(height: 16),
+//
+//             /// 🔥 CUSTOMER NAME
+//             FutureBuilder<DocumentSnapshot>(
+//               future: FirebaseFirestore.instance
+//                   .collection("customer_detail")
+//                   .doc(customerId)
+//                   .get(),
+//               builder: (context, customerSnap) {
+//                 if (customerSnap.connectionState == ConnectionState.waiting) {
+//                   return Row(
+//                     children: [
+//                       SizedBox(
+//                         height: 14,
+//                         width: 14,
+//                         child: CircularProgressIndicator(
+//                           strokeWidth: 2,
+//                           color: Colors.grey[400],
+//                         ),
+//                       ),
+//                       const SizedBox(width: 8),
+//                       Text(
+//                         "Loading customer...",
+//                         style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+//                       ),
+//                     ],
+//                   );
+//                 }
+//
+//                 if (!customerSnap.hasData || !customerSnap.data!.exists) {
+//                   return Row(
+//                     children: [
+//                       Icon(
+//                         Icons.person_outline_rounded,
+//                         size: 18,
+//                         color: Colors.grey[600],
+//                       ),
+//                       const SizedBox(width: 8),
+//                       const Text(
+//                         "Customer not found",
+//                         style: TextStyle(fontSize: 15, color: Colors.grey),
+//                       ),
+//                     ],
+//                   );
+//                 }
+//
+//                 final data = customerSnap.data!.data() as Map<String, dynamic>;
+//                 final customerName = data["name"] ?? "Unknown Customer";
+//
+//                 return Row(
+//                   children: [
+//                     Icon(
+//                       Icons.person_outline_rounded,
+//                       size: 18,
+//                       color: Colors.grey[600],
+//                     ),
+//                     const SizedBox(width: 8),
+//                     Text(
+//                       customerName,
+//                       style: TextStyle(
+//                         fontSize: 15,
+//                         color: Colors.grey[700],
+//                         fontWeight: FontWeight.w500,
+//                       ),
+//                     ),
+//                   ],
+//                 );
+//               },
+//             ),
+//
+//             const SizedBox(height: 12),
+//
+//             /// 🔥 TIME
+//             Row(
+//               children: [
+//                 Icon(
+//                   Icons.access_time_rounded,
+//                   size: 18,
+//                   color: Colors.grey[600],
+//                 ),
+//                 const SizedBox(width: 8),
+//                 Text(
+//                   time,
+//                   style: TextStyle(
+//                     fontSize: 14,
+//                     color: Colors.grey[700],
+//                   ),
+//                 ),
+//               ],
+//             ),
+//
+//             const SizedBox(height: 12),
+//
+//             /// 🔥 LOCATION
+//             FutureBuilder<DocumentSnapshot>(
+//               future: FirebaseFirestore.instance
+//                   .collection("customer_detail")
+//                   .doc(customerId)
+//                   .get(),
+//               builder: (context, customerSnap) {
+//                 if (!customerSnap.hasData || !customerSnap.data!.exists) {
+//                   return const SizedBox();
+//                 }
+//
+//                 final data = customerSnap.data!.data() as Map<String, dynamic>;
+//                 final location = data["address"] ?? "Unknown Address";
+//
+//                 return Row(
+//                   crossAxisAlignment: CrossAxisAlignment.start,
+//                   children: [
+//                     Icon(
+//                       Icons.location_on_rounded,
+//                       size: 18,
+//                       color: Colors.grey[600],
+//                     ),
+//                     const SizedBox(width: 8),
+//                     Expanded(
+//                       child: Text(
+//                         location,
+//                         style: TextStyle(
+//                           fontSize: 14,
+//                           color: Colors.grey[700],
+//                         ),
+//                       ),
+//                     ),
+//                   ],
+//                 );
+//               },
+//             ),
+//
+//             if (problem.isNotEmpty) ...[
+//               const SizedBox(height: 12),
+//               Row(
+//                 crossAxisAlignment: CrossAxisAlignment.start,
+//                 children: [
+//                   Icon(
+//                     Icons.description_outlined,
+//                     size: 18,
+//                     color: Colors.grey[600],
+//                   ),
+//                   const SizedBox(width: 8),
+//                   Expanded(
+//                     child: Text(
+//                       problem,
+//                       style: TextStyle(
+//                         fontSize: 14,
+//                         color: Colors.grey[700],
+//                       ),
+//                     ),
+//                   ),
+//                 ],
+//               ),
+//             ],
+//
+//             const SizedBox(height: 20),
+//
+//             /// 🔥 ACTION BUTTONS
+//             Row(
+//               children: [
+//                 Expanded(
+//                   child: OutlinedButton(
+//                     style: OutlinedButton.styleFrom(
+//                       foregroundColor: Colors.red,
+//                       side: BorderSide(color: Colors.red.shade400, width: 1.5),
+//                       shape: RoundedRectangleBorder(
+//                         borderRadius: BorderRadius.circular(14),
+//                       ),
+//                       padding: const EdgeInsets.symmetric(vertical: 14),
+//                     ),
+//                     onPressed: () {
+//                       FirebaseFirestore.instance
+//                           .collection("booking_details")
+//                           .doc(bookingId)
+//                           .update({"status": "Rejected"});
+//                     },
+//                     child: const Text(
+//                       "Reject",
+//                       style: TextStyle(
+//                         fontWeight: FontWeight.w600,
+//                         fontSize: 15,
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//                 const SizedBox(width: 12),
+//                 Expanded(
+//                   child: ElevatedButton(
+//                     style: ElevatedButton.styleFrom(
+//                       backgroundColor: const Color(0xFF1ABC9C),
+//                       foregroundColor: Colors.white,
+//                       elevation: 0,
+//                       shape: RoundedRectangleBorder(
+//                         borderRadius: BorderRadius.circular(14),
+//                       ),
+//                       padding: const EdgeInsets.symmetric(vertical: 14),
+//                     ),
+//                     onPressed: () async {
+//                       // Update booking
+//                       await FirebaseFirestore.instance
+//                           .collection("booking_details")
+//                           .doc(bookingId)
+//                           .update({"status": "Accepted"});
+//
+//                       // Create CUSTOMER notification
+//                       final notificationId =
+//                           FirebaseFirestore.instance.collection("notifications").doc().id;
+//
+//                       await FirebaseFirestore.instance
+//                           .collection("notifications")
+//                           .doc(notificationId)
+//                           .set({
+//                         "notification_id": notificationId,
+//                         "booking_id": bookingId,
+//                         "service_id": serviceId,
+//
+//                         // 🔔 CUSTOMER RECEIVES
+//                         "receiver_id": customerId,
+//                         "receiver_type": "customer",
+//
+//                         // EMPLOYEE SENDS
+//                         "sender_id": widget.uid,
+//                         "sender_type": "employeee", // match your DB for now
+//
+//                         "title": "Booking Accepted",
+//                         "message": "Your service request has been accepted",
+//
+//                         "is_read": false,
+//                         "created_at": Timestamp.now(),
+//                       });
+//
+//                       ScaffoldMessenger.of(context).showSnackBar(
+//                         const SnackBar(content: Text("Request Accepted")),
+//                       );
+//                     },
+//
+//
+//                     child: const Text(
+//                       "Accept",
+//                       style: TextStyle(
+//                         fontWeight: FontWeight.w600,
+//                         fontSize: 15,
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+
 
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+/// =====================
+/// DATA MODEL
+/// =====================
+class BookingFullData {
+  final QueryDocumentSnapshot booking;
+  final Map<String, dynamic> service;
+  final Map<String, dynamic> customer;
+
+  BookingFullData({
+    required this.booking,
+    required this.service,
+    required this.customer,
+  });
+}
+
+/// =====================
+/// SCREEN
+/// =====================
 class EmployeeRequestsScreen extends StatefulWidget {
   final String uid;
   const EmployeeRequestsScreen({super.key, required this.uid});
@@ -303,6 +796,39 @@ class EmployeeRequestsScreen extends StatefulWidget {
 }
 
 class _EmployeeRequestsScreenState extends State<EmployeeRequestsScreen> {
+
+  /// 🔥 LOAD ALL DATA FIRST
+  Future<List<BookingFullData>> _loadAllBookingData(
+      List<QueryDocumentSnapshot> bookings) async {
+    List<BookingFullData> result = [];
+
+    for (var booking in bookings) {
+      final serviceId = booking["service_id"];
+      final customerId = booking["customer_id"];
+
+      final serviceDoc = await FirebaseFirestore.instance
+          .collection("services")
+          .doc(serviceId)
+          .get();
+
+      final customerDoc = await FirebaseFirestore.instance
+          .collection("customer_detail")
+          .doc(customerId)
+          .get();
+
+      if (serviceDoc.exists && customerDoc.exists) {
+        result.add(
+          BookingFullData(
+            booking: booking,
+            service: serviceDoc.data()!,
+            customer: customerDoc.data()!,
+          ),
+        );
+      }
+    }
+    return result;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -317,7 +843,6 @@ class _EmployeeRequestsScreenState extends State<EmployeeRequestsScreen> {
             color: Colors.black87,
             fontWeight: FontWeight.bold,
             fontSize: 20,
-            letterSpacing: 0.2,
           ),
         ),
         leading: IconButton(
@@ -327,7 +852,7 @@ class _EmployeeRequestsScreenState extends State<EmployeeRequestsScreen> {
         ),
       ),
 
-      // 🔥 FETCH REQUESTS FROM FIRESTORE
+      /// 🔥 BOOKINGS STREAM
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection("booking_details")
@@ -335,70 +860,47 @@ class _EmployeeRequestsScreenState extends State<EmployeeRequestsScreen> {
             .where("status", isEqualTo: "Pending")
             .snapshots(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Color(0xFF1ABC9C),
-              ),
-            );
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.inbox_rounded,
-                      size: 64,
-                      color: Colors.grey[400],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Text(
-                    "No Requests Found",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[700],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    "You're all caught up!",
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.grey[500],
-                    ),
-                  ),
-                ],
-              ),
-            );
+
+          if (!snapshot.hasData) {
+            return _fullLoader();
           }
 
-          final bookings = snapshot.data!.docs;
+          if (snapshot.data!.docs.isEmpty) {
+            return _emptyState();
+          }
 
-          return ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            itemCount: bookings.length,
-            itemBuilder: (context, index) {
-              final booking = bookings[index];
+          /// 🔥 LOAD SERVICE + CUSTOMER DATA
+          return FutureBuilder<List<BookingFullData>>(
+            future: _loadAllBookingData(snapshot.data!.docs),
+            builder: (context, dataSnap) {
 
-              return requestCard(
-                bookingId: booking.id,
-                customerId: booking["customer_id"],
-                serviceId: booking["service_id"],
-                time: booking["service_date"]
-                    .toDate()
-                    .toString()
-                    .substring(0, 16),
-                problem: booking["problem_description"] ?? "",
+              if (!dataSnap.hasData) {
+                return _fullLoader();
+              }
+
+              final bookings = dataSnap.data!;
+
+              return ListView.builder(
+                padding: const EdgeInsets.all(20),
+                itemCount: bookings.length,
+                itemBuilder: (context, index) {
+                  final item = bookings[index];
+                  final booking = item.booking;
+
+                  return _requestCard(
+                    bookingId: booking.id,
+                    serviceName: item.service["name"] ?? "Unknown Service",
+                    customerName: item.customer["name"] ?? "Unknown Customer",
+                    address: item.customer["address"] ?? "Unknown Address",
+                    time: booking["service_date"]
+                        .toDate()
+                        .toString()
+                        .substring(0, 16),
+                    problem: booking["problem_description"] ?? "",
+                    customerId: booking["customer_id"],
+                    serviceId: booking["service_id"],
+                  );
+                },
               );
             },
           );
@@ -407,18 +909,22 @@ class _EmployeeRequestsScreenState extends State<EmployeeRequestsScreen> {
     );
   }
 
-  // ============================================================
-  // REQUEST CARD
-  // ============================================================
-  Widget requestCard({
+  /// =====================
+  /// REQUEST CARD
+  /// =====================
+  Widget _requestCard({
     required String bookingId,
-    required String customerId,
-    required String serviceId,
+    required String serviceName,
+    required String customerName,
+    required String address,
     required String time,
     required String problem,
+    required String customerId,
+    required String serviceId,
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
@@ -430,335 +936,163 @@ class _EmployeeRequestsScreenState extends State<EmployeeRequestsScreen> {
           ),
         ],
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// 🔥 SERVICE NAME
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection("services")
-                  .doc(serviceId)
-                  .get(),
-              builder: (context, serviceSnap) {
-                if (serviceSnap.connectionState == ConnectionState.waiting) {
-                  return Row(
-                    children: [
-                      SizedBox(
-                        height: 16,
-                        width: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Loading service...",
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  );
-                }
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
 
-                if (!serviceSnap.hasData || !serviceSnap.data!.exists) {
-                  return const Text(
-                    "Service not found",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  );
-                }
-
-                final data = serviceSnap.data!.data() as Map<String, dynamic>;
-                final serviceName =
-                    data["name"] ?? data["service_name"] ?? "Unknown Service";
-
-                return Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1ABC9C).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.home_repair_service_rounded,
-                        color: Color(0xFF1ABC9C),
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        serviceName,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-
-            const SizedBox(height: 16),
-
-            /// 🔥 CUSTOMER NAME
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection("customer_detail")
-                  .doc(customerId)
-                  .get(),
-              builder: (context, customerSnap) {
-                if (customerSnap.connectionState == ConnectionState.waiting) {
-                  return Row(
-                    children: [
-                      SizedBox(
-                        height: 14,
-                        width: 14,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.grey[400],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Loading customer...",
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                    ],
-                  );
-                }
-
-                if (!customerSnap.hasData || !customerSnap.data!.exists) {
-                  return Row(
-                    children: [
-                      Icon(
-                        Icons.person_outline_rounded,
-                        size: 18,
-                        color: Colors.grey[600],
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        "Customer not found",
-                        style: TextStyle(fontSize: 15, color: Colors.grey),
-                      ),
-                    ],
-                  );
-                }
-
-                final data = customerSnap.data!.data() as Map<String, dynamic>;
-                final customerName = data["name"] ?? "Unknown Customer";
-
-                return Row(
-                  children: [
-                    Icon(
-                      Icons.person_outline_rounded,
-                      size: 18,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      customerName,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.grey[700],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-
-            const SizedBox(height: 12),
-
-            /// 🔥 TIME
-            Row(
-              children: [
-                Icon(
-                  Icons.access_time_rounded,
-                  size: 18,
-                  color: Colors.grey[600],
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  time,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[700],
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 12),
-
-            /// 🔥 LOCATION
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection("customer_detail")
-                  .doc(customerId)
-                  .get(),
-              builder: (context, customerSnap) {
-                if (!customerSnap.hasData || !customerSnap.data!.exists) {
-                  return const SizedBox();
-                }
-
-                final data = customerSnap.data!.data() as Map<String, dynamic>;
-                final location = data["address"] ?? "Unknown Address";
-
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.location_on_rounded,
-                      size: 18,
-                      color: Colors.grey[600],
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        location,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[700],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
-            ),
-
-            if (problem.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(
-                    Icons.description_outlined,
-                    size: 18,
-                    color: Colors.grey[600],
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      problem,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[700],
-                      ),
-                    ),
-                  ),
-                ],
+          /// SERVICE
+          Row(
+            children: [
+              const Icon(Icons.home_repair_service, color: Color(0xFF1ABC9C)),
+              const SizedBox(width: 10),
+              Text(
+                serviceName,
+                style: const TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
+          ),
 
-            const SizedBox(height: 20),
+          const SizedBox(height: 12),
 
-            /// 🔥 ACTION BUTTONS
+          /// CUSTOMER
+          Row(
+            children: [
+              const Icon(Icons.person_outline),
+              const SizedBox(width: 8),
+              Text(customerName),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// TIME
+          Row(
+            children: [
+              const Icon(Icons.access_time),
+              const SizedBox(width: 8),
+              Text(time),
+            ],
+          ),
+
+          const SizedBox(height: 10),
+
+          /// LOCATION
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Icon(Icons.location_on),
+              const SizedBox(width: 8),
+              Expanded(child: Text(address)),
+            ],
+          ),
+
+          if (problem.isNotEmpty) ...[
+            const SizedBox(height: 10),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.red,
-                      side: BorderSide(color: Colors.red.shade400, width: 1.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () {
-                      FirebaseFirestore.instance
-                          .collection("booking_details")
-                          .doc(bookingId)
-                          .update({"status": "Rejected"});
-                    },
-                    child: const Text(
-                      "Reject",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1ABC9C),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-                    onPressed: () async {
-                      // Update booking
-                      await FirebaseFirestore.instance
-                          .collection("booking_details")
-                          .doc(bookingId)
-                          .update({"status": "Accepted"});
-
-                      // Create CUSTOMER notification
-                      final notificationId =
-                          FirebaseFirestore.instance.collection("notifications").doc().id;
-
-                      await FirebaseFirestore.instance
-                          .collection("notifications")
-                          .doc(notificationId)
-                          .set({
-                        "notification_id": notificationId,
-                        "booking_id": bookingId,
-                        "service_id": serviceId,
-
-                        // 🔔 CUSTOMER RECEIVES
-                        "receiver_id": customerId,
-                        "receiver_type": "customer",
-
-                        // EMPLOYEE SENDS
-                        "sender_id": widget.uid,
-                        "sender_type": "employeee", // match your DB for now
-
-                        "title": "Booking Accepted",
-                        "message": "Your service request has been accepted",
-
-                        "is_read": false,
-                        "created_at": Timestamp.now(),
-                      });
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Request Accepted")),
-                      );
-                    },
-
-
-                    child: const Text(
-                      "Accept",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                      ),
-                    ),
-                  ),
-                ),
+                const Icon(Icons.description_outlined),
+                const SizedBox(width: 8),
+                Expanded(child: Text(problem)),
               ],
             ),
           ],
-        ),
+
+          const SizedBox(height: 18),
+
+          /// ACTION BUTTONS
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.red,
+                    side: const BorderSide(color: Colors.red),
+                  ),
+                  onPressed: () {
+                    FirebaseFirestore.instance
+                        .collection("booking_details")
+                        .doc(bookingId)
+                        .update({"status": "Rejected"});
+                  },
+                  child: const Text("Reject"),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1ABC9C),
+                  ),
+                  onPressed: () async {
+                    await FirebaseFirestore.instance
+                        .collection("booking_details")
+                        .doc(bookingId)
+                        .update({"status": "Accepted"});
+
+                    final notificationId = FirebaseFirestore.instance
+                        .collection("notifications")
+                        .doc()
+                        .id;
+
+                    await FirebaseFirestore.instance
+                        .collection("notifications")
+                        .doc(notificationId)
+                        .set({
+                      "notification_id": notificationId,
+                      "booking_id": bookingId,
+                      "service_id": serviceId,
+                      "receiver_id": customerId,
+                      "receiver_type": "customer",
+                      "sender_id": widget.uid,
+                      "sender_type": "employee",
+                      "title": "Booking Accepted",
+                      "message": "Your service request has been accepted",
+                      "is_read": false,
+                      "created_at": Timestamp.now(),
+                    });
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Request Accepted")),
+                    );
+                  },
+                  child: const Text("Accept"),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  } 
+
+  /// =====================
+  /// FULL SCREEN LOADER
+  /// =====================
+  Widget _fullLoader() {
+    return const Center(
+      child: CircularProgressIndicator(
+        color: Color(0xFF1ABC9C),
+      ),
+    );
+  }
+
+  /// =====================
+  /// EMPTY STATE
+  /// =====================
+  Widget _emptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Icon(Icons.inbox_rounded, size: 80, color: Colors.grey),
+          SizedBox(height: 16),
+          Text(
+            "No Requests Found",
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+          ),
+        ],
       ),
     );
   }

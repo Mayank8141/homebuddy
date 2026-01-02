@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../login.dart';
 import 'admin_analytics.dart';
+import 'admin_notification.dart';
 import 'admin_services.dart';
 import 'admin_users.dart';
 import 'admin_employe.dart';
@@ -30,6 +31,19 @@ class _admin_dashboardState extends State<admin_dashboard> {
     super.initState();
     fetchAdminDetails();
   }
+
+  Stream<int> adminUnreadNotificationCount() {
+    final adminId = FirebaseAuth.instance.currentUser!.uid;
+
+    return FirebaseFirestore.instance
+        .collection("notifications")
+        .where("receiver_id", isEqualTo: adminId)
+        .where("receiver_type", isEqualTo: "admin")
+        .where("is_read", isEqualTo: false)
+        .snapshots()
+        .map((snapshot) => snapshot.docs.length);
+  }
+
 
   // ================= FETCH ADMIN =================
   Future<void> fetchAdminDetails() async {
@@ -354,33 +368,51 @@ class _admin_dashboardState extends State<admin_dashboard> {
           ],
         ),
         actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(
-                  Icons.notifications_rounded,
-                  color: Colors.black87,
-                ),
-                onPressed: () {
-                  // Navigate to notifications
-                },
-              ),
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
+          StreamBuilder<int>(
+            stream: adminUnreadNotificationCount(),
+            builder: (context, snapshot) {
+              final count = snapshot.data ?? 0;
+
+              return Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AdminNotificationScreen(),
+                        ),
+                      );
+                    },
                   ),
-                ),
-              ),
-            ],
+                  if (count > 0)
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Text(
+                          count > 9 ? "9+" : "$count",
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              );
+            },
           ),
           const SizedBox(width: 8),
         ],
+
       ),
 
       // ================= DRAWER =================
@@ -487,7 +519,7 @@ class _admin_dashboardState extends State<admin_dashboard> {
                     },
                   ),
                   _buildDrawerItem(
-                    icon: Icons.cleaning_services_rounded,
+                    icon: Icons.bar_chart,
                     title: "Analitics",
                     onTap: () {
                       Navigator.pop(context);
@@ -600,18 +632,18 @@ class _admin_dashboardState extends State<admin_dashboard> {
                       letterSpacing: 0.2,
                     ),
                   ),
-                  TextButton(
-                    onPressed: () {
-                      // Navigate to all bookings
-                    },
-                    child: const Text(
-                      "View All",
-                      style: TextStyle(
-                        color: Color(0xFF1ABC9C),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  // TextButton(
+                  //   onPressed: () {
+                  //     // Navigate to all bookings
+                  //   },
+                  //   child: const Text(
+                  //     "View All",
+                  //     style: TextStyle(
+                  //       color: Color(0xFF1ABC9C),
+                  //       fontWeight: FontWeight.w600,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
 

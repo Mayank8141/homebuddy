@@ -350,6 +350,9 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
 
+  String? profileImage;
+
+
   @override
   void initState() {
     super.initState();
@@ -384,6 +387,7 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
           userPhone = data["phone"] ?? "Phone";
           userEmail = data["email"] ?? "email";
           userAddress = data["address"] ?? "Address";
+          profileImage = data["image"];
           isLoading = false;
         });
       }
@@ -431,65 +435,136 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 15),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Hello👋",
-                  style: GoogleFonts.inter(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1F36),
-                    letterSpacing: -0.5,
-                  ),
+
+          // 👤 PROFILE IMAGE + NAME (CLICKABLE)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => customer_profile(uid: widget.uid),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  "What service do you need today?",
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: const Color(0xFF6B7280),
-                    fontWeight: FontWeight.w400,
-                  ),
+              );
+            },
+            child: Row(
+              children: [
+                // PROFILE IMAGE
+                CircleAvatar(
+                  radius: 26,
+                  backgroundColor: Colors.grey[200],
+                  backgroundImage:
+                  profileImage != null && profileImage!.isNotEmpty
+                      ? NetworkImage(profileImage!)
+                      : null,
+                  child: profileImage == null || profileImage!.isEmpty
+                      ? const Icon(Icons.person,
+                      size: 28, color: Colors.grey)
+                      : null,
+                ),
+
+                const SizedBox(width: 12),
+
+                // NAME + SUBTITLE
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      userName,
+                      style: GoogleFonts.inter(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1A1F36),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      "What service do you need today?",
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        color: const Color(0xFF6B7280),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
+
+          const Spacer(),
+
+          // 🔔 NOTIFICATION + PROFILE ICON (RIGHT)
           Row(
             children: [
-              _buildIconButton(
-                Icons.notifications_outlined,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CustomerNotificationPage(
-                        customerId: widget.uid,
-                      ),
-                    ),
-                  );
-                },
-              ),
-
+              _buildNotificationIcon(),
               const SizedBox(width: 8),
-              _buildIconButton(
-                Icons.person_outline_rounded,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => customer_profile(uid: widget.uid),
-                    ),
-                  );
-                },
-              ),
+              // _buildIconButton(
+              //   Icons.person_outline_rounded,
+              //   onTap: () {
+              //     Navigator.push(
+              //       context,
+              //       MaterialPageRoute(
+              //         builder: (_) => customer_profile(uid: widget.uid),
+              //       ),
+              //     );
+              //   },
+              // ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildNotificationIcon() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection("notifications")
+          .where("customerId", isEqualTo: widget.uid)
+          .snapshots(),
+      builder: (context, snapshot) {
+        int unreadCount = 0;
+
+        if (snapshot.hasData) {
+          unreadCount = snapshot.data!.docs
+              .where((doc) => doc["isRead"] == false)
+              .length;
+        }
+
+        return Stack(
+          children: [
+            _buildIconButton(
+              Icons.notifications_outlined,
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CustomerNotificationPage(
+                      customerId: widget.uid,
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // 🔴 RED DOT
+            if (unreadCount > 0)
+              Positioned(
+                right: 6,
+                top: 6,
+                child: Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: Colors.red,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -936,25 +1011,27 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
             var services = snapshot.data!.docs.take(6).toList();
 
 
-            return Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+            return SizedBox(
+              height: 150, // 👈 height for category cards
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 itemCount: services.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  crossAxisSpacing: 12,
-                  mainAxisSpacing: 12,
-                  childAspectRatio: 0.85,
-                ),
                 itemBuilder: (context, index) {
                   var service = services[index];
-                  return _buildCategoryCard(
-                    service["name"],
-                    service.id,
-                    index,
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: SizedBox(
+                      width: 120, // 👈 width of each category card
+                      child: _buildCategoryCard(
+                        service["name"],
+                        service.id,
+                        index,
+                      ),
+                    ),
                   );
+
                 },
               ),
             );

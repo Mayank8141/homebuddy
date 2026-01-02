@@ -102,7 +102,7 @@ class _EmployeeMainState extends State<EmployeeMain> {
 
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: index,
-        selectedItemColor: const Color(0xFF0052D4),
+        selectedItemColor: const Color(0xFF1ABC9C),
         unselectedItemColor: Colors.grey,
         type: BottomNavigationBarType.fixed,
         onTap: (i) => setState(() => index = i),

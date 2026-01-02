@@ -1,499 +1,7 @@
-// // import 'dart:io';
-// //
-// // import 'package:cloud_firestore/cloud_firestore.dart';
-// // import 'package:firebase_auth/firebase_auth.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:image_picker/image_picker.dart';
-// // import 'package:dio/dio.dart';
-// // import 'package:shared_preferences/shared_preferences.dart';
-// //
-// // import '../login.dart';
-// //
-// // class EmployeProfile extends StatefulWidget {
-// //   final String uid;
-// //
-// //   const EmployeProfile({
-// //     super.key,
-// //     required this.uid,
-// //   });
-// //
-// //   @override
-// //   State<EmployeProfile> createState() => _EmployeProfileState();
-// // }
-// //
-// // class _EmployeProfileState extends State<EmployeProfile>
-// //     with SingleTickerProviderStateMixin {
-// //   Map<String, dynamic>? profile;
-// //
-// //   late TextEditingController nameCtrl;
-// //   late TextEditingController phoneCtrl;
-// //   late TextEditingController addressCtrl;
-// //   late TextEditingController visitChargeCtrl;
-// //   late TextEditingController experienceCtrl;
-// //
-// //   late AnimationController _controller;
-// //   late Animation<double> _fadeAnim;
-// //   late Animation<Offset> _slideAnim;
-// //
-// //   bool uploadingImage = false;
-// //   final ImagePicker _picker = ImagePicker();
-// //
-// //   // ================= LOAD EMPLOYEE PROFILE =================
-// //   Future<void> loadProfile() async {
-// //     final doc = await FirebaseFirestore.instance
-// //         .collection("employe_detail")
-// //         .doc(widget.uid)
-// //         .get();
-// //
-// //     if (!mounted || !doc.exists) return;
-// //
-// //     profile = doc.data();
-// //
-// //     nameCtrl.text = profile?['name'] ?? '';
-// //     phoneCtrl.text = profile?['phone'] ?? '';
-// //     addressCtrl.text = profile?['address'] ?? '';
-// //     visitChargeCtrl.text = profile?['visit_charge'] ?? '';
-// //     experienceCtrl.text = profile?['experience'] ?? '';
-// //
-// //     setState(() {});
-// //   }
-// //
-// //   @override
-// //   void initState() {
-// //     super.initState();
-// //
-// //     nameCtrl = TextEditingController();
-// //     phoneCtrl = TextEditingController();
-// //     addressCtrl = TextEditingController();
-// //     visitChargeCtrl = TextEditingController();
-// //     experienceCtrl = TextEditingController();
-// //
-// //     loadProfile();
-// //
-// //     _controller = AnimationController(
-// //       vsync: this,
-// //       duration: const Duration(milliseconds: 700),
-// //     );
-// //
-// //     _fadeAnim = CurvedAnimation(parent: _controller, curve: Curves.easeOut);
-// //     _slideAnim =
-// //         Tween<Offset>(begin: const Offset(0, 0.08), end: Offset.zero)
-// //             .animate(_fadeAnim);
-// //
-// //     _controller.forward();
-// //   }
-// //
-// //   @override
-// //   void dispose() {
-// //     _controller.dispose();
-// //     nameCtrl.dispose();
-// //     phoneCtrl.dispose();
-// //     addressCtrl.dispose();
-// //     visitChargeCtrl.dispose();
-// //     experienceCtrl.dispose();
-// //     super.dispose();
-// //   }
-// //
-// //   // ================= UPDATE PROFILE =================
-// //   Future<void> updateProfile() async {
-// //     try {
-// //       await FirebaseFirestore.instance
-// //           .collection("employe_detail")
-// //           .doc(widget.uid)
-// //           .update({
-// //         "name": nameCtrl.text.trim(),
-// //         "phone": phoneCtrl.text.trim(),
-// //         "address": addressCtrl.text.trim(),
-// //         "visit_charge": visitChargeCtrl.text.trim(), // ✅ editable
-// //       });
-// //
-// //       profile!['name'] = nameCtrl.text.trim();
-// //       profile!['phone'] = phoneCtrl.text.trim();
-// //       profile!['address'] = addressCtrl.text.trim();
-// //       profile!['visit_charge'] = visitChargeCtrl.text.trim();
-// //
-// //       Navigator.pop(context);
-// //
-// //       ScaffoldMessenger.of(context).showSnackBar(
-// //         const SnackBar(content: Text("Profile updated successfully")),
-// //       );
-// //
-// //       setState(() {});
-// //     } catch (e) {
-// //       ScaffoldMessenger.of(context).showSnackBar(
-// //         SnackBar(content: Text("Update failed: $e")),
-// //       );
-// //     }
-// //   }
-// //
-// //   // ================= IMAGE UPLOAD =================
-// //   Future<void> pickAndUploadImage() async {
-// //     final picked = await _picker.pickImage(source: ImageSource.gallery);
-// //     if (picked == null) return;
-// //
-// //     setState(() => uploadingImage = true);
-// //
-// //     try {
-// //       final imageUrl = await uploadToCloudinary(File(picked.path));
-// //
-// //       await FirebaseFirestore.instance
-// //           .collection("employe_detail")
-// //           .doc(widget.uid)
-// //           .update({"image": imageUrl});
-// //
-// //       profile!['image'] = imageUrl;
-// //       setState(() {});
-// //     } catch (_) {}
-// //
-// //     setState(() => uploadingImage = false);
-// //   }
-// //
-// //   Future<String> uploadToCloudinary(File file) async {
-// //     const cloudinaryUrl =
-// //         "https://api.cloudinary.com/v1_1/drsaz2xgk/image/upload";
-// //
-// //     final formData = FormData.fromMap({
-// //       "file": await MultipartFile.fromFile(file.path),
-// //       "upload_preset": "homebuddy",
-// //     });
-// //
-// //     final response = await Dio().post(cloudinaryUrl, data: formData);
-// //     return response.data["secure_url"];
-// //   }
-// //
-// //   // ================= EDIT BOTTOM SHEET =================
-// //   void openEditSheet() {
-// //     FocusScope.of(context).unfocus();
-// //
-// //     showModalBottomSheet(
-// //       context: context,
-// //       isScrollControlled: true,
-// //       shape: const RoundedRectangleBorder(
-// //         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-// //       ),
-// //       builder: (_) => Padding(
-// //         padding: EdgeInsets.fromLTRB(
-// //           20,
-// //           20,
-// //           20,
-// //           MediaQuery.of(context).viewInsets.bottom + 20,
-// //         ),
-// //         child: Column(
-// //           mainAxisSize: MainAxisSize.min,
-// //           children: [
-// //             field("Name", nameCtrl),
-// //             const SizedBox(height: 12),
-// //             field("Phone", phoneCtrl, type: TextInputType.phone),
-// //             const SizedBox(height: 12),
-// //             field("Address", addressCtrl),
-// //             const SizedBox(height: 12),
-// //             field("Visit Charge (₹)", visitChargeCtrl,
-// //                 type: TextInputType.number), // ✅ editable
-// //             const SizedBox(height: 12),
-// //             field("Experience (Years)", experienceCtrl,
-// //                 enabled: false), // 🔒 read-only
-// //             const SizedBox(height: 25),
-// //             SizedBox(
-// //               width: double.infinity,
-// //               height: 50,
-// //               child: ElevatedButton(
-// //                 onPressed: updateProfile,
-// //                 style: ElevatedButton.styleFrom(
-// //                   backgroundColor: const Color(0xFF1976D2),
-// //                   shape: RoundedRectangleBorder(
-// //                     borderRadius: BorderRadius.circular(10),
-// //                   ),
-// //                 ),
-// //                 child: const Text(
-// //                   "Save Changes",
-// //                   style: TextStyle(color: Colors.white, fontSize: 16),
-// //                 ),
-// //               ),
-// //             )
-// //           ],
-// //         ),
-// //       ),
-// //     );
-// //   }
-// //
-// //   Widget field(
-// //       String label,
-// //       TextEditingController ctrl, {
-// //         TextInputType type = TextInputType.text,
-// //         bool enabled = true,
-// //       }) {
-// //     return Column(
-// //       crossAxisAlignment: CrossAxisAlignment.start,
-// //       children: [
-// //         Text(label,
-// //             style: const TextStyle(
-// //                 fontWeight: FontWeight.w600, color: Colors.blue)),
-// //         const SizedBox(height: 6),
-// //         TextField(
-// //           controller: ctrl,
-// //           enabled: enabled,
-// //           keyboardType: type,
-// //           decoration: InputDecoration(
-// //             filled: true,
-// //             fillColor:
-// //             enabled ? Colors.blue.shade50 : Colors.grey.shade200,
-// //             border: OutlineInputBorder(
-// //               borderRadius: BorderRadius.circular(10),
-// //               borderSide: BorderSide.none,
-// //             ),
-// //           ),
-// //         ),
-// //       ],
-// //     );
-// //   }
-// //
-// //   // ================= UI =================
-// //   @override
-// //   Widget build(BuildContext context) {
-// //     if (profile == null) {
-// //       return const Scaffold(
-// //         body: Center(child: CircularProgressIndicator()),
-// //       );
-// //     }
-// //
-// //     final image = profile!['image'] ?? '';
-// //
-// //     return Scaffold(
-// //       backgroundColor: const Color(0xFFF4F8FF),
-// //       appBar: AppBar(
-// //         centerTitle: true,
-// //         title:
-// //         const Text("My Profile", style: TextStyle(color: Colors.black)),
-// //         actions: [
-// //           IconButton(
-// //             icon: const Icon(Icons.edit, color: Colors.blue),
-// //             onPressed: openEditSheet,
-// //           )
-// //         ],
-// //       ),
-// //       body: SingleChildScrollView(
-// //         padding: const EdgeInsets.all(20),
-// //         child: FadeTransition(
-// //           opacity: _fadeAnim,
-// //           child: SlideTransition(
-// //             position: _slideAnim,
-// //             child: Column(
-// //               children: [
-// //                 GestureDetector(
-// //                   onTap: pickAndUploadImage,
-// //                   child: CircleAvatar(
-// //                     radius: 60,
-// //                     backgroundImage: image.isNotEmpty
-// //                         ? NetworkImage(image)
-// //                         : const NetworkImage(
-// //                       "https://www.transparentpng.com/thumb/user/gray-user-profile-icon-png-fP8Q1P.png",
-// //                     ),
-// //                   ),
-// //                 ),
-// //                 const SizedBox(height: 20),
-// //
-// //                 Text(profile!['name'] ?? '',
-// //                     style: const TextStyle(
-// //                         fontSize: 22, fontWeight: FontWeight.bold)),
-// //                 Text(profile!['email'] ?? '',
-// //                     style: const TextStyle(color: Colors.grey)),
-// //
-// //                 const SizedBox(height: 30),
-// //
-// //                 profileTile(Icons.phone, "Phone", profile!['phone'] ?? ''),
-// //                 profileTile(Icons.location_on, "Address",
-// //                     profile!['address'] ?? ''),
-// //                 profileTile(Icons.currency_rupee, "Visit Charge",
-// //                     "₹${profile!['visit_charge'] ?? '--'}"),
-// //                 profileTile(Icons.work, "Experience",
-// //                     "${profile!['experience'] ?? '--'} years"),
-// //
-// //                 const SizedBox(height: 30),
-// //
-// //                 TextButton.icon(
-// //                   onPressed: () => logout(context),
-// //                   icon: const Icon(Icons.logout, color: Colors.red),
-// //                   label: const Text("Logout",
-// //                       style: TextStyle(color: Colors.red)),
-// //                 ),
-// //               ],
-// //             ),
-// //           ),
-// //         ),
-// //       ),
-// //     );
-// //   }
-// //
-// //   Widget profileTile(IconData icon, String title, String value) {
-// //     return Container(
-// //       margin: const EdgeInsets.only(bottom: 12),
-// //       padding: const EdgeInsets.all(15),
-// //       decoration: BoxDecoration(
-// //         color: Colors.white,
-// //         borderRadius: BorderRadius.circular(12),
-// //         boxShadow: const [
-// //           BoxShadow(color: Colors.black12, blurRadius: 6),
-// //         ],
-// //       ),
-// //       child: Row(
-// //         children: [
-// //           Icon(icon, color: Colors.blue),
-// //           const SizedBox(width: 15),
-// //           Column(
-// //             crossAxisAlignment: CrossAxisAlignment.start,
-// //             children: [
-// //               Text(title,
-// //                   style:
-// //                   const TextStyle(fontSize: 13, color: Colors.grey)),
-// //               Text(value,
-// //                   style: const TextStyle(
-// //                       fontSize: 16, fontWeight: FontWeight.w600)),
-// //             ],
-// //           ),
-// //         ],
-// //       ),
-// //     );
-// //   }
-// // }
-// //
-// // // ================= LOGOUT =================
-// // Future<void> logout(BuildContext context) async {
-// //   await FirebaseAuth.instance.signOut();
-// //   SharedPreferences prefs = await SharedPreferences.getInstance();
-// //   await prefs.clear();
-// //
-// //   Navigator.pushAndRemoveUntil(
-// //     context,
-// //     MaterialPageRoute(builder: (_) => login_screen()),
-// //         (route) => false,
-// //   );
-// // }
-//
-//
-// import 'package:flutter/material.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
-//
-// class EmployeProfile extends StatefulWidget {
-//   final String uid;
-//   const EmployeProfile({super.key, required this.uid});
-//
-//   @override
-//   State<EmployeProfile> createState() => _EmployeProfileState();
-// }
-//
-// class _EmployeProfileState extends State<EmployeProfile> {
-//   Map<String, dynamic>? profile;
-//
-//   final TextEditingController phoneCtrl = TextEditingController();
-//   final TextEditingController addressCtrl = TextEditingController();
-//   final TextEditingController expCtrl = TextEditingController();
-//   final TextEditingController visitCtrl = TextEditingController();
-//
-//   Future<void> loadProfile() async {
-//     final doc = await FirebaseFirestore.instance
-//         .collection("employe_detail")
-//         .doc(widget.uid)
-//         .get();
-//
-//     if (!doc.exists) return;
-//
-//     profile = doc.data();
-//     setState(() {});
-//   }
-//
-//   @override
-//   void initState() {
-//     super.initState();
-//     loadProfile();
-//   }
-//
-//   // CREATE PROFILE
-//   Future<void> createProfile() async {
-//     await FirebaseFirestore.instance
-//         .collection("employe_detail")
-//         .doc(widget.uid)
-//         .update({
-//       "phone": phoneCtrl.text.trim(),
-//       "address": addressCtrl.text.trim(),
-//       "experience": expCtrl.text.trim(),
-//       "visit_charge": visitCtrl.text.trim(),
-//       "profileCompleted": true,
-//     });
-//
-//     Navigator.pop(context);
-//     loadProfile();
-//   }
-//
-//   void openCreateProfileSheet() {
-//     showModalBottomSheet(
-//       context: context,
-//       isScrollControlled: true,
-//       builder: (_) => Padding(
-//         padding: EdgeInsets.fromLTRB(
-//           20,
-//           20,
-//           20,
-//           MediaQuery.of(context).viewInsets.bottom + 20,
-//         ),
-//         child: Column(
-//           mainAxisSize: MainAxisSize.min,
-//           children: [
-//             TextField(controller: phoneCtrl, decoration: const InputDecoration(labelText: "Phone")),
-//             TextField(controller: addressCtrl, decoration: const InputDecoration(labelText: "Address")),
-//             TextField(controller: visitCtrl, decoration: const InputDecoration(labelText: "Visit Charge")),
-//             TextField(controller: expCtrl, decoration: const InputDecoration(labelText: "Experience")),
-//             const SizedBox(height: 20),
-//             ElevatedButton(
-//               onPressed: createProfile,
-//               child: const Text("Save Profile"),
-//             )
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     if (profile == null) {
-//       return const Scaffold(body: Center(child: CircularProgressIndicator()));
-//     }
-//
-//     final completed = profile!['profileCompleted'] == true;
-//
-//     return Scaffold(
-//       appBar: AppBar(title: const Text("Employee Profile")),
-//       body: Padding(
-//         padding: const EdgeInsets.all(20),
-//         child: Column(
-//           children: [
-//             Text(profile!['username'] ?? '',
-//                 style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-//             Text(profile!['email'] ?? ''),
-//
-//             const SizedBox(height: 30),
-//
-//             if (!completed)
-//               ElevatedButton(
-//                 onPressed: openCreateProfileSheet,
-//                 child: const Text("Create Profile"),
-//               ),
-//
-//             if (completed) ...[
-//               ListTile(title: const Text("Phone"), subtitle: Text(profile!['phone'])),
-//               ListTile(title: const Text("Address"), subtitle: Text(profile!['address'])),
-//               ListTile(title: const Text("Visit Charge"), subtitle: Text(profile!['visit_charge'])),
-//               ListTile(title: const Text("Experience"), subtitle: Text("${profile!['experience']} years")),
-//             ],
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+
 
 import 'dart:io';
-
+import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
@@ -520,6 +28,10 @@ class _EmployeProfileState extends State<EmployeProfile> {
   final expCtrl = TextEditingController();
   final visitCtrl = TextEditingController();
 
+  List<QueryDocumentSnapshot> _allCities = [];
+  List<QueryDocumentSnapshot> _filteredCities = [];
+
+
   String? selectedCityId;
   String? selectedServiceId;
 
@@ -528,6 +40,36 @@ class _EmployeProfileState extends State<EmployeProfile> {
 
   static const String defaultAvatar =
       "https://www.transparentpng.com/thumb/user/gray-user-profile-icon-png-fP8Q1P.png";
+
+  bool isValidExperience(String value) {
+    final exp = int.tryParse(value);
+    return exp != null && exp >= 1 && exp <= 50;
+  }
+
+  bool isValidVisitCharge(String value) {
+    final charge = int.tryParse(value);
+    return charge != null && charge >= 100 && charge <= 500;
+  }
+
+
+  void showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Colors.white),
+            const SizedBox(width: 8),
+            Expanded(child: Text(message)),
+          ],
+        ),
+        backgroundColor: Colors.orange,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+
 
   Future<void> loadProfile() async {
     final doc = await FirebaseFirestore.instance
@@ -616,6 +158,18 @@ class _EmployeProfileState extends State<EmployeProfile> {
     setState(() => imageUploading = false);
   }
 
+
+  String getProfileImage() {
+    final img = profile?['image'];
+
+    if (img == null || img.toString().isEmpty) {
+      return defaultAvatar; // fallback image
+    }
+
+    return img.toString();
+  }
+
+
   Future<String> uploadToCloudinary(File file) async {
     const cloudinaryUrl =
         "https://api.cloudinary.com/v1_1/drsaz2xgk/image/upload";
@@ -653,6 +207,16 @@ class _EmployeProfileState extends State<EmployeProfile> {
       );
       return;
     }
+    if (!isValidExperience(expCtrl.text.trim())) {
+      showError("Experience must be between 1 and 50 years");
+      return;
+    }
+
+    if (!isValidVisitCharge(visitCtrl.text.trim())) {
+      showError("Visit charge must be between ₹100 and ₹500");
+      return;
+    }
+
 
     showDialog(
       context: context,
@@ -749,6 +313,104 @@ class _EmployeProfileState extends State<EmployeProfile> {
     }
   }
 
+
+  void _openCitySearch() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection("cities")
+        .orderBy("name")
+        .get();
+
+    _allCities = snapshot.docs;
+    _filteredCities = List.from(_allCities);
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(height: 16),
+
+                  // 🔍 Search Field
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: TextField(
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.search),
+                        hintText: "Search city",
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setModalState(() {
+                          _filteredCities = _allCities.where((doc) {
+                            return doc['name']
+                                .toString()
+                                .toLowerCase()
+                                .contains(value.toLowerCase());
+                          }).toList();
+                        });
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // 📋 City List
+                  SizedBox(
+                    height: 350,
+                    child: _filteredCities.isEmpty
+                        ? const Center(child: Text("No city found"))
+                        : ListView.builder(
+                      itemCount: _filteredCities.length,
+                      itemBuilder: (_, index) {
+                        final city = _filteredCities[index];
+                        return ListTile(
+                          title: Text(city['name']),
+                          onTap: () {
+                            setState(() {
+                              selectedCityId = city.id;
+                            });
+                            Navigator.pop(context);
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  String _getCityNameById(String? cityId) {
+    if (cityId == null) return "";
+
+    try {
+      return _allCities
+          .firstWhere((doc) => doc.id == cityId)['name'];
+    } catch (_) {
+      return "";
+    }
+  }
+
+
+
   void openProfileSheet() {
     showModalBottomSheet(
       context: context,
@@ -789,10 +451,70 @@ class _EmployeProfileState extends State<EmployeProfile> {
                   type: TextInputType.phone),
               field("Address", addressCtrl, Icons.location_on_outlined,
                   maxLines: 2),
-              field("Experience (Years)", expCtrl, Icons.work_outline,
-                  type: TextInputType.number),
-              field("Visit Charge (₹)", visitCtrl, Icons.currency_rupee,
-                  type: TextInputType.number),
+
+              // field("Experience (Years)", expCtrl, Icons.work_outline,
+              //     type: TextInputType.number),
+
+              TextField(
+                controller: expCtrl,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(2),
+                ],
+                decoration: InputDecoration(
+                  labelText: "Experience (Years)",
+                  prefixIcon: const Icon(Icons.work_outline),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF1ABC9C), width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // field("Visit Charge (₹)", visitCtrl, Icons.currency_rupee,
+              //     type: TextInputType.number),
+
+              TextField(
+                controller: visitCtrl,
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(3),
+                ],
+                decoration: InputDecoration(
+                  labelText: "Visit Charge (₹)",
+                  prefixIcon: const Icon(Icons.currency_rupee),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Colors.grey[300]!),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFF1ABC9C), width: 2),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[50],
+                ),
+              ),
+
+
+
+
               const SizedBox(height: 8),
               cityDropdown(),
               const SizedBox(height: 16),
@@ -894,12 +616,19 @@ class _EmployeProfileState extends State<EmployeProfile> {
                                   width: 3,
                                 ),
                               ),
-                              child: CircleAvatar(
+                              child:CircleAvatar(
                                 radius: 60,
-                                backgroundImage: imageUrl != null && imageUrl != ""
-                                    ? NetworkImage(imageUrl)
-                                    : const NetworkImage(defaultAvatar),
+                                backgroundColor: Colors.grey[200],
+                                backgroundImage:
+                                (profile?['image'] != null && profile!['image'].toString().isNotEmpty)
+                                    ? NetworkImage(profile!['image'])
+                                    : null,
+                                child: (profile?['image'] == null ||
+                                    profile!['image'].toString().isEmpty)
+                                    ? const Icon(Icons.person, size: 50, color: Colors.grey)
+                                    : null,
                               ),
+
                             ),
                             if (imageUploading)
                               Positioned.fill(
@@ -1115,29 +844,24 @@ class _EmployeProfileState extends State<EmployeProfile> {
                       const SizedBox(height: 32),
 
                       // Settings & Support Section
-                      if (completed)
+
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                "Settings & Support",
-                                style: TextStyle(
+                              Text(
+                                completed ? "Settings & Support" : "Settings & Support",
+                                style: const TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.black87,
                                 ),
                               ),
+
                               const SizedBox(height: 16),
-                              // _menuTile(
-                              //   Icons.history,
-                              //   "Booking History",
-                              //       () {
-                              //     // Navigate to booking history
-                              //   },
-                              // ),
+
                               _menuTile(
                                 Icons.logout,
                                 "Logout",
@@ -1328,26 +1052,56 @@ class _EmployeProfileState extends State<EmployeProfile> {
     );
   }
 
+  // Widget cityDropdown() {
+  //   return StreamBuilder<QuerySnapshot>(
+  //     stream: FirebaseFirestore.instance.collection("cities").snapshots(),
+  //     builder: (_, snapshot) {
+  //       if (!snapshot.hasData) {
+  //         return const LinearProgressIndicator();
+  //       }
+  //       return DropdownButtonFormField<String>(
+  //         value: selectedCityId,
+  //         hint: const Text("Select City"),
+  //         items: snapshot.data!.docs
+  //             .map((doc) => DropdownMenuItem(
+  //           value: doc.id,
+  //           child: Text(doc['name']),
+  //         ))
+  //             .toList(),
+  //         onChanged: (v) => setState(() => selectedCityId = v),
+  //         decoration: InputDecoration(
+  //           labelText: "City",
+  //           prefixIcon: const Icon(Icons.location_city_outlined),
+  //           border: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(12),
+  //           ),
+  //           enabledBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(12),
+  //             borderSide: BorderSide(color: Colors.grey[300]!),
+  //           ),
+  //           focusedBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(12),
+  //             borderSide: const BorderSide(color: Color(0xFF1ABC9C), width: 2),
+  //           ),
+  //           filled: true,
+  //           fillColor: Colors.grey[50],
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
   Widget cityDropdown() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance.collection("cities").snapshots(),
-      builder: (_, snapshot) {
-        if (!snapshot.hasData) {
-          return const LinearProgressIndicator();
-        }
-        return DropdownButtonFormField<String>(
-          value: selectedCityId,
-          hint: const Text("Select City"),
-          items: snapshot.data!.docs
-              .map((doc) => DropdownMenuItem(
-            value: doc.id,
-            child: Text(doc['name']),
-          ))
-              .toList(),
-          onChanged: (v) => setState(() => selectedCityId = v),
+    return GestureDetector(
+      onTap: _openCitySearch,
+      child: AbsorbPointer(
+        child: TextField(
           decoration: InputDecoration(
             labelText: "City",
             prefixIcon: const Icon(Icons.location_city_outlined),
+            hintText: "Select City",
+            filled: true,
+            fillColor: Colors.grey[50],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
             ),
@@ -1357,15 +1111,20 @@ class _EmployeProfileState extends State<EmployeProfile> {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: Color(0xFF1ABC9C), width: 2),
+              borderSide:
+              const BorderSide(color: Color(0xFF1ABC9C), width: 2),
             ),
-            filled: true,
-            fillColor: Colors.grey[50],
+            suffixIcon: const Icon(Icons.keyboard_arrow_down),
           ),
-        );
-      },
+          controller: TextEditingController(
+            text: _getCityNameById(selectedCityId),
+          ),
+        ),
+      ),
     );
   }
+
+
 
   Widget serviceDropdown() {
     return StreamBuilder<QuerySnapshot>(
@@ -1406,3 +1165,4 @@ class _EmployeProfileState extends State<EmployeProfile> {
     );
   }
 }
+

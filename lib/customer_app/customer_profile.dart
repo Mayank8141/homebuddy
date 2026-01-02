@@ -720,7 +720,7 @@ class _customer_profileState extends State<customer_profile>
                   context,
                   MaterialPageRoute(
                     builder: (context) => CustomerNotificationPage(
-                      customerId: widget.uid, // 👈 pass logged-in user id
+                      customerId: widget.uid, //  pass logged-in user id
                     ),
                   ),
                 );},
@@ -734,7 +734,7 @@ class _customer_profileState extends State<customer_profile>
                   context,
                   MaterialPageRoute(
                     builder: (context) => AboutPage(
-                      //customerId: widget.uid, // 👈 pass logged-in user id
+                      //customerId: widget.uid, //  pass logged-in user id
                     ),
                   ),
                 );},
