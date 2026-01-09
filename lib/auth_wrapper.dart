@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'email_verification_screen.dart';
 import 'login.dart';
 import 'main.dart'; // EmployeeMain
 import 'admin_app/admin_dashboard.dart';
@@ -17,6 +18,14 @@ class AuthWrapper extends StatelessWidget {
     if (user == null) {
       return const login_screen();
     }
+
+    await user.reload();
+    if (!user.emailVerified) {
+      return const EmailVerificationScreen();
+    }
+
+
+
 
     final role = prefs.getString("role");
     final uid = prefs.getString("uid") ?? user.uid;

@@ -328,7 +328,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shimmer/shimmer.dart';
-
+import 'package:flutter/services.dart';
 import 'customer_amployee_servicelist.dart';
 import 'customer_categories_page.dart';
 import 'customer_notification.dart';
@@ -400,9 +400,16 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFB),
-      body: SafeArea(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent, // matches header background
+          statusBarIconBrightness: Brightness.dark, // ANDROID icons
+          statusBarBrightness: Brightness.light, // IOS text/icons
+        ),
+        child: Scaffold(
+          backgroundColor: const Color(0xFFF8FAFB),
+
+          body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
             await getUserData();
@@ -420,7 +427,9 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
                   _buildLocationBar(),
                   _buildPromoBanner(),
                   _buildCategoriesSection(),
-                  _buildTrendingSection(),
+                 // _buildTrendingSection(),
+                  _buildServiceImageSlider(),
+
                   const SizedBox(height: 20),
                 ],
               ),
@@ -428,6 +437,7 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
           ),
         ),
       ),
+        )
     );
   }
 
@@ -1204,6 +1214,75 @@ class _customer_home_screenState extends State<customer_home_screen> with Single
         };
     }
   }
+
+  Widget _buildServiceImageSlider() {
+    final List<String> sliderImages = [
+      "https://www.shutterstock.com/image-photo/electrician-wiring-house-working-on-260nw-2505256693.jpg",
+      "https://tiimg.tistatic.com/fp/1/007/134/ac-repair-maintenance-service-518.jpg",
+      "https://img.freepik.com/free-photo/professional-cleaning-service-people-working-together-office_23-2150520596.jpg?semt=ais_hybrid&w=740&q=80",
+      "https://relgrow.com/assets/images/plumbing-contractors-in-bangalore/plumbing-banner.png",
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            "Our Services",
+            style: GoogleFonts.inter(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: const Color(0xFF1A1F36),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          SizedBox(
+            height: 180,
+            child: PageView.builder(
+              controller: PageController(viewportFraction: 0.9),
+              itemCount: sliderImages.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(18),
+                    child: Image.network(
+                      sliderImages[index],
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          color: Colors.grey[200],
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF00BFA5),
+                            ),
+                          ),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: Colors.grey[200],
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _buildTrendingSection() {
     return Column(

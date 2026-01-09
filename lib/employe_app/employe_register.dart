@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
+import '../email_verification_screen.dart';
 import '../login.dart';
 
 class employe_register_screen extends StatefulWidget {
@@ -105,6 +107,8 @@ class _employe_register_screenState extends State<employe_register_screen> {
         email: emailCtrl.text.trim(),
         password: passwordCtrl.text.trim(),
       );
+      await cred.user!.sendEmailVerification();
+
 
       await _firestore.collection("employe_detail").doc(cred.user!.uid).set({
         "uid": cred.user!.uid,
@@ -128,8 +132,9 @@ class _employe_register_screenState extends State<employe_register_screen> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => login_screen()),
+          MaterialPageRoute(builder: (_) => const EmailVerificationScreen()),
         );
+
       }
     } on FirebaseAuthException catch (e) {
       String message;
@@ -178,9 +183,16 @@ class _employe_register_screenState extends State<employe_register_screen> {
   // ================= IMPROVED UI =================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+        value: const SystemUiOverlayStyle(
+          statusBarColor: Colors.white, // ✅ SOLID COLOR
+          statusBarIconBrightness: Brightness.dark, // Android
+          statusBarBrightness: Brightness.light, // iOS
+        ),
+        child: Scaffold(
+          backgroundColor: Colors.white,
+
+          body: SafeArea(
         child: SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
           child: Padding(
@@ -266,13 +278,14 @@ class _employe_register_screenState extends State<employe_register_screen> {
                 TextField(
                   controller: nameCtrl,
                   style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
                     labelText: "Full Name",
                     hintText: "Enter your full name",
-                    prefixIcon: const Icon(Icons.person_outline_rounded, size: 22),
+                    prefixIcon: const Icon(Icons.person_outline_rounded, size: 22,color: Color(0xFF1ABC9C)),
                     labelStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                     filled: true,
@@ -306,13 +319,14 @@ class _employe_register_screenState extends State<employe_register_screen> {
                   controller: emailCtrl,
                   keyboardType: TextInputType.emailAddress,
                   style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
                     labelText: "Email",
                     hintText: "yourname@gmail.com",
-                    prefixIcon: const Icon(Icons.email_outlined, size: 22),
+                    prefixIcon: const Icon(Icons.email_outlined, size: 22,color: Color(0xFF1ABC9C),),
                     labelStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
                     hintStyle: TextStyle(color: Colors.grey[400], fontSize: 14),
                     filled: true,
@@ -346,13 +360,14 @@ class _employe_register_screenState extends State<employe_register_screen> {
                   controller: passwordCtrl,
                   obscureText: _obscurePassword,
                   style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                   ),
                   decoration: InputDecoration(
                     labelText: "Password",
                     hintText: "Minimum 6 characters",
-                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 22),
+                    prefixIcon: const Icon(Icons.lock_outline_rounded, size: 22,color: Color(0xFF1ABC9C)),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _obscurePassword
@@ -481,6 +496,7 @@ class _employe_register_screenState extends State<employe_register_screen> {
           ),
         ),
       ),
+        )
     );
   }
 

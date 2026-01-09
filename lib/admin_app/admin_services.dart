@@ -454,10 +454,10 @@ class _admin_servicesState extends State<admin_services> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: openAddServiceModal,
         backgroundColor: const Color(0xFF1ABC9C),
-        icon: const Icon(Icons.add_rounded),
+        icon: const Icon(Icons.add_rounded,color: Colors.white,),
         label: const Text(
           "Add Service",
-          style: TextStyle(fontWeight: FontWeight.w600),
+          style: TextStyle(fontWeight: FontWeight.w600,color: Colors.white),
         ),
         elevation: 4,
       ),

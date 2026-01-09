@@ -2214,6 +2214,7 @@ class _customer_register_screenState extends State<customer_register_screen> {
     return TextField(
       controller: controller,
       style: const TextStyle(
+        color: Colors.black,
         fontSize: 16,
         fontWeight: FontWeight.w500,
       ),

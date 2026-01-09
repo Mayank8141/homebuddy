@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../login.dart';
 import 'customer_aboutus.dart';
 import 'customer_bookings_history.dart';
+import 'customer_faq.dart';
 import 'customer_notification.dart';
 
 class customer_profile extends StatefulWidget {
@@ -440,11 +441,15 @@ class _customer_profileState extends State<customer_profile>
               child: Stack(
                 alignment: Alignment.center,
                 children: [
+                  SizedBox(height: 200,),
                   Container(
+
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: Colors.white, width: 4),
+
                     ),
+
                     child: CircleAvatar(
                       radius: 65,
                       backgroundColor: Colors.grey[200],
@@ -707,9 +712,11 @@ class _customer_profileState extends State<customer_profile>
           ),
           const SizedBox(height: 8),
           _buildMenuItem(
-            Icons.favorite_outline_rounded,
-            "Favorites",
-                () {},
+            Icons.help_outline,
+            "FAQ",
+                () {
+              Navigator.push(context,MaterialPageRoute(builder: (_)=>FaqPage()));
+                },
           ),
 
           const SizedBox(height: 8),

@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:homebuddy/admin_app/admin_bookings.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -465,7 +466,7 @@ class _admin_dashboardState extends State<admin_dashboard> {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        adminEmail,
+                        "admin@gmail.com",
                         style: TextStyle(
                           fontSize: 14,
                           color: Colors.white.withOpacity(0.9),
@@ -529,21 +530,32 @@ class _admin_dashboardState extends State<admin_dashboard> {
                       );
                     },
                   ),
-                  const Divider(height: 32),
                   _buildDrawerItem(
-                    icon: Icons.settings_rounded,
-                    title: "Settings",
+                    icon: Icons.calendar_month_rounded,
+                    title: "Bookings",
                     onTap: () {
-                      // Navigate to settings
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AdminBookingsPage()),
+                      );
                     },
                   ),
-                  _buildDrawerItem(
-                    icon: Icons.help_outline_rounded,
-                    title: "Help & Support",
-                    onTap: () {
-                      // Navigate to help
-                    },
-                  ),
+                  //const Divider(height: 380),
+                  // _buildDrawerItem(
+                  //   icon: Icons.settings_rounded,
+                  //   title: "Settings",
+                  //   onTap: () {
+                  //     // Navigate to settings
+                  //   },
+                  // ),
+                  // _buildDrawerItem(
+                  //   icon: Icons.help_outline_rounded,
+                  //   title: "Help & Support",
+                  //   onTap: () {
+                  //     // Navigate to help
+                  //   },
+                  // ),
                 ],
               ),
             ),
@@ -553,7 +565,8 @@ class _admin_dashboardState extends State<admin_dashboard> {
                 icon: Icons.logout_rounded,
                 title: "Logout",
                 color: Colors.red,
-                onTap: () => logout(context),
+                onTap: () => showLogoutConfirmation(context),
+
               ),
             ),
           ],
@@ -628,7 +641,7 @@ class _admin_dashboardState extends State<admin_dashboard> {
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: Color(0xFF000000),
                       letterSpacing: 0.2,
                     ),
                   ),
@@ -708,7 +721,7 @@ class _admin_dashboardState extends State<admin_dashboard> {
     Color? color,
   }) {
     return ListTile(
-      leading: Icon(icon, color: color ?? Colors.black87),
+      leading: Icon(icon, color: color ?? Color(0xFF1ABC9C)),
       title: Text(
         title,
         style: TextStyle(
@@ -735,6 +748,53 @@ class _admin_dashboardState extends State<admin_dashboard> {
       context,
       MaterialPageRoute(builder: (_) => login_screen()),
           (route) => false,
+    );
+  }
+// ================= LOGOUT CONFIRMATION =================
+  void showLogoutConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: const Text(
+            "Confirm Logout",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          content: const Text(
+            "Are you sure you want to logout?",
+            style: TextStyle(fontSize: 15),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                "Cancel",
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              onPressed: () async {
+                Navigator.pop(context); // close dialog
+                await logout(context);  // perform logout
+              },
+              child: const Text(
+                "Logout",
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 

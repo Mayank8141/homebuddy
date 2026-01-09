@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 import 'customer_bill.dart';
 
@@ -27,11 +28,23 @@ class _CustomerNotificationPageState
         backgroundColor: Colors.white,
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.black),
+
+        // 🔥 STATUS BAR FIX
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.white, // solid background
+          statusBarIconBrightness: Brightness.dark, // ANDROID icons
+          statusBarBrightness: Brightness.light, // IOS text/icons
+        ),
+
         title: const Text(
           "Notifications",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
+
 
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -126,6 +139,7 @@ class _CustomerNotificationPageState
                             Text(
                               data['title'] ?? "Notification",
                               style: TextStyle(
+                                color: Colors.black,
                                 fontSize: 15,
                                 fontWeight: isRead
                                     ? FontWeight.w500

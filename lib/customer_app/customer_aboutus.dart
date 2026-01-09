@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-
+import 'package:flutter/services.dart';
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
 
@@ -12,6 +12,14 @@ class AboutPage extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+
+        // 🔥 THIS CONTROLS STATUS BAR
+        systemOverlayStyle: const SystemUiOverlayStyle(
+          statusBarColor: Colors.white, // solid background
+          statusBarIconBrightness: Brightness.dark, // ANDROID icons
+          statusBarBrightness: Brightness.light, // IOS text/icons
+        ),
+
         title: const Text(
           "About HomeBuddy",
           style: TextStyle(
@@ -27,6 +35,7 @@ class AboutPage extends StatelessWidget {
           onPressed: () => Navigator.pop(context),
         ),
       ),
+
       body: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
         child: Column(
@@ -168,11 +177,11 @@ class AboutPage extends StatelessWidget {
                   _buildServiceChip("Cleaning"),
                   _buildServiceChip("Plumbing"),
                   _buildServiceChip("Electrical"),
-                  _buildServiceChip("Carpentry"),
+                  _buildServiceChip("Gardning"),
                   _buildServiceChip("Painting"),
                   _buildServiceChip("AC Repair"),
-                  _buildServiceChip("Appliance Repair"),
-                  _buildServiceChip("Pest Control"),
+                  // _buildServiceChip("Appliance Repair"),
+                  // _buildServiceChip("Pest Control"),
                 ],
               ),
             ),
@@ -205,60 +214,60 @@ class AboutPage extends StatelessWidget {
             ),
 
             // Social Media Section
-            _buildSection(
-              title: "Follow Us",
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildSocialButton(
-                    icon: Icons.facebook,
-                    onTap: () => _launchUrl("https://facebook.com/homebuddy"),
-                  ),
-                  const SizedBox(width: 16),
-                  _buildSocialButton(
-                    icon: Icons.camera_alt,
-                    onTap: () => _launchUrl("https://instagram.com/homebuddy"),
-                  ),
-                  const SizedBox(width: 16),
-                  _buildSocialButton(
-                    icon: Icons.tiktok,
-                    onTap: () => _launchUrl("https://twitter.com/homebuddy"),
-                  ),
-                  const SizedBox(width: 16),
-                  _buildSocialButton(
-                    icon: Icons.language,
-                    onTap: () => _launchUrl("https://linkedin.com/company/homebuddy"),
-                  ),
-                ],
-              ),
-            ),
+            // _buildSection(
+            //   title: "Follow Us",
+            //   child: Row(
+            //     mainAxisAlignment: MainAxisAlignment.center,
+            //     children: [
+            //       _buildSocialButton(
+            //         icon: Icons.facebook,
+            //         onTap: () => _launchUrl("https://facebook.com/homebuddy"),
+            //       ),
+            //       const SizedBox(width: 16),
+            //       _buildSocialButton(
+            //         icon: Icons.camera_alt,
+            //         onTap: () => _launchUrl("https://instagram.com/homebuddy"),
+            //       ),
+            //       const SizedBox(width: 16),
+            //       _buildSocialButton(
+            //         icon: Icons.tiktok,
+            //         onTap: () => _launchUrl("https://twitter.com/homebuddy"),
+            //       ),
+            //       const SizedBox(width: 16),
+            //       _buildSocialButton(
+            //         icon: Icons.language,
+            //         onTap: () => _launchUrl("https://linkedin.com/company/homebuddy"),
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
             // Legal Section
-            _buildSection(
-              title: "Legal",
-              child: Column(
-                children: [
-                  _buildLegalItem(
-                    title: "Terms & Conditions",
-                    onTap: () {
-                      // Navigate to Terms page
-                    },
-                  ),
-                  _buildLegalItem(
-                    title: "Privacy Policy",
-                    onTap: () {
-                      // Navigate to Privacy page
-                    },
-                  ),
-                  _buildLegalItem(
-                    title: "Refund Policy",
-                    onTap: () {
-                      // Navigate to Refund page
-                    },
-                  ),
-                ],
-              ),
-            ),
+            // _buildSection(
+            //   title: "Legal",
+            //   child: Column(
+            //     children: [
+            //       _buildLegalItem(
+            //         title: "Terms & Conditions",
+            //         onTap: () {
+            //           // Navigate to Terms page
+            //         },
+            //       ),
+            //       _buildLegalItem(
+            //         title: "Privacy Policy",
+            //         onTap: () {
+            //           // Navigate to Privacy page
+            //         },
+            //       ),
+            //       _buildLegalItem(
+            //         title: "Refund Policy",
+            //         onTap: () {
+            //           // Navigate to Refund page
+            //         },
+            //       ),
+            //     ],
+            //   ),
+            // ),
 
             // Footer
             Container(

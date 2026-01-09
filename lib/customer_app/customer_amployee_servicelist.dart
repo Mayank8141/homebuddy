@@ -293,6 +293,7 @@ class _CustomerServiceListState extends State<CustomerServiceList>
     );
   }
 
+
   Widget _buildAppBar() {
     return SliverAppBar(
       expandedHeight: 120,
@@ -615,7 +616,7 @@ class _CustomerServiceListState extends State<CustomerServiceList>
                       ],
                     ),
                     const SizedBox(height: 16),
-                    _buildSkillsSection(data),
+                    //_buildSkillsSection(data),
                     const SizedBox(height: 16),
                     _buildPriceAndLocationRow(data),
                   ],

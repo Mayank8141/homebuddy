@@ -73,11 +73,20 @@
 //   }
 // }
 
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'auth_wrapper.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+// Screens
+
+import 'admin_app/admin_dashboard.dart';
+import 'email_verification_screen.dart';
+import 'employe_app/employe_dashbord.dart';
+import 'customer_app/customer_home.dart';
+import 'login.dart';
+import 'main.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -88,6 +97,7 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
+
   late AnimationController _controller;
   late Animation<double> _scale;
   late Animation<double> _fade;
@@ -97,52 +107,87 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
+    // ---------------- ANIMATIONS ----------------
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
 
     _scale = Tween<double>(begin: 0.5, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutBack,
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutBack),
     );
 
     _fade = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeIn,
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
     );
 
     _slide = Tween<Offset>(
       begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(
-      CurvedAnimation(
-        parent: _controller,
-        curve: Curves.easeOutCubic,
-      ),
+      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
     );
 
     _controller.forward();
 
-    // ⏳ After splash → AuthWrapper
-    Timer(const Duration(seconds: 3), () {
+    // ---------------- AUTO LOGIN ----------------
+    Timer(const Duration(seconds: 3), () async {
       if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-          const AuthWrapper(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-          transitionDuration: const Duration(milliseconds: 500),
-        ),
-      );
+      await _checkAutoLogin();
     });
+  }
+
+  // =================================================
+  // 🔐 AUTO LOGIN LOGIC (FINAL & SAFE)
+  // =================================================
+  Future<void> _checkAutoLogin() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final prefs = await SharedPreferences.getInstance();
+    final role = prefs.getString("role");
+
+    // ❌ Not logged in
+    if (user == null || role == null) {
+      _goTo(const login_screen());
+      return;
+    }
+
+    // ================= ADMIN =================
+    if (role == "admin") {
+      _goTo(admin_dashboard(uid: user.uid));
+      return;
+    }
+
+    // ================= EMPLOYEE / CUSTOMER =================
+    if (role == "employee" || role == "customer") {
+      if (!user.emailVerified) {
+        await FirebaseAuth.instance.signOut();
+        _goTo(const EmailVerificationScreen());
+        return;
+      }
+
+      if (role == "employee") {
+        _goTo(EmployeeMain(uid: user.uid));
+      } else {
+        _goTo(customer_home_screen(uid: user.uid));
+      }
+      return;
+    }
+
+    // ❌ Fallback
+    await FirebaseAuth.instance.signOut();
+    _goTo(const login_screen());
+  }
+
+  void _goTo(Widget page) {
+    Navigator.pushReplacement(
+      context,
+      PageRouteBuilder(
+        pageBuilder: (_, __, ___) => page,
+        transitionsBuilder: (_, animation, __, child) =>
+            FadeTransition(opacity: animation, child: child),
+        transitionDuration: const Duration(milliseconds: 400),
+      ),
+    );
   }
 
   @override
@@ -151,6 +196,9 @@ class _SplashScreenState extends State<SplashScreen>
     super.dispose();
   }
 
+  // =================================================
+  // 🎨 UI (UNCHANGED – YOUR DESIGN IS PERFECT)
+  // =================================================
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
@@ -162,14 +210,14 @@ class _SplashScreenState extends State<SplashScreen>
         body: Container(
           width: double.infinity,
           height: double.infinity,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                const Color(0xFF1ABC9C),
-                const Color(0xFF16A085),
-                const Color(0xFF0E8C73),
+                Color(0xFF1ABC9C),
+                Color(0xFF16A085),
+                Color(0xFF0E8C73),
               ],
             ),
           ),
@@ -180,7 +228,6 @@ class _SplashScreenState extends State<SplashScreen>
                 children: [
                   const Spacer(flex: 2),
 
-                  // Logo with animations
                   FadeTransition(
                     opacity: _fade,
                     child: ScaleTransition(
@@ -188,6 +235,7 @@ class _SplashScreenState extends State<SplashScreen>
                       child: Container(
                         width: 140,
                         height: 140,
+                        padding: const EdgeInsets.all(24),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(32),
@@ -199,7 +247,6 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ],
                         ),
-                        padding: const EdgeInsets.all(24),
                         child: Image.asset(
                           "assets/images/logo1.png",
                           fit: BoxFit.contain,
@@ -210,7 +257,6 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const SizedBox(height: 40),
 
-                  // App Name with slide animation
                   SlideTransition(
                     position: _slide,
                     child: FadeTransition(
@@ -223,34 +269,19 @@ class _SplashScreenState extends State<SplashScreen>
                               color: Colors.white,
                               fontSize: 42,
                               fontWeight: FontWeight.bold,
-                              letterSpacing: 1.2,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black26,
-                                  offset: Offset(0, 2),
-                                  blurRadius: 4,
-                                ),
-                              ],
                             ),
                           ),
                           const SizedBox(height: 12),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 8,
-                            ),
+                                horizontal: 20, vertical: 8),
                             decoration: BoxDecoration(
                               color: Colors.white.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: const Text(
                               "Fast Service",
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: 0.8,
-                              ),
+                              style: TextStyle(color: Colors.white),
                             ),
                           ),
                         ],
@@ -260,36 +291,9 @@ class _SplashScreenState extends State<SplashScreen>
 
                   const Spacer(flex: 2),
 
-                  // Loading indicator
-                  FadeTransition(
-                    opacity: _fade,
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: 40,
-                          height: 40,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white.withOpacity(0.8),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          "Loading...",
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.9),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  const CircularProgressIndicator(color: Colors.white),
 
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),

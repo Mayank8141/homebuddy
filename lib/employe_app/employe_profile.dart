@@ -526,6 +526,7 @@ class _EmployeProfileState extends State<EmployeProfile> {
                 child: ElevatedButton(
                   onPressed: saveProfile,
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFFFFFFF),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -533,7 +534,7 @@ class _EmployeProfileState extends State<EmployeProfile> {
                   ),
                   child: const Text(
                     "Save Profile",
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600,color: Color(0xFF1ABC9C)),
                   ),
                 ),
               ),
@@ -834,7 +835,7 @@ class _EmployeProfileState extends State<EmployeProfile> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                   ),
-                                  child: const Text("Create Profile"),
+                                  child: const Text("Create Profile",style:TextStyle(color: Colors.white),),
                                 ),
                               ),
                             ],

@@ -228,7 +228,15 @@ class EmployeeEarningsScreen extends StatelessWidget {
         centerTitle: true,
         title: const Text(
           "My Earnings",
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
+          style: TextStyle(color: Colors.black87,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            letterSpacing: 0.2,),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+          color: Colors.black87,
+          onPressed: () => Navigator.pop(context),
         ),
         iconTheme: const IconThemeData(color: Colors.black),
       ),

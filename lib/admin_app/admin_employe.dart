@@ -317,10 +317,19 @@ class _admin_employe_listState extends State<admin_employe_list> {
             final data = emp.data() as Map<String, dynamic>;
 
             String joinDate = "N/A";
-            if (data["created_at"] is Timestamp) {
-              joinDate = DateFormat("dd MMM yyyy")
-                  .format((data["created_at"] as Timestamp).toDate());
+
+            Timestamp? created;
+
+            if (data["createdAt"] != null && data["createdAt"] is Timestamp) {
+              created = data["createdAt"];
+            } else if (data["created_at"] != null && data["created_at"] is Timestamp) {
+              created = data["created_at"];
             }
+
+            if (created != null) {
+              joinDate = DateFormat("dd MMM yyyy").format(created.toDate());
+            }
+
 
             return Container(
               margin: const EdgeInsets.only(bottom: 12),

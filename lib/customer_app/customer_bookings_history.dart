@@ -193,6 +193,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
+import 'customer_provider_profile.dart';
+
 class BookingHistoryScreen extends StatefulWidget {
   final String userId;
 
@@ -530,6 +532,8 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
   }
 
   Widget _buildServiceInfo(Map<String, dynamic> data) {
+    final String? serviceId = data['service_id'];
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -552,30 +556,64 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
             ),
           ),
           const SizedBox(width: 12),
+
+          /// 🔥 FETCH SERVICE NAME
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "Service Type",
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    color: const Color(0xFF6B7280),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  data['service_name'] ?? 'Service',
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF1A1F36),
-                  ),
-                ),
-              ],
+            child: FutureBuilder<DocumentSnapshot>(
+              future: FirebaseFirestore.instance
+                  .collection('services')
+                  .doc(serviceId)
+                  .get(),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Text(
+                    "Loading service...",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.grey,
+                    ),
+                  );
+                }
+
+                if (!snapshot.data!.exists) {
+                  return Text(
+                    "Service not found",
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: Colors.red,
+                    ),
+                  );
+                }
+
+                final serviceData =
+                snapshot.data!.data() as Map<String, dynamic>;
+
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Service Type",
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: const Color(0xFF6B7280),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      serviceData['name'] ?? "Service",
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1A1F36),
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
           ),
+
           if (data['visit_charge'] != null)
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -601,6 +639,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
       ),
     );
   }
+
 
   Widget _buildDateTimeSection(Map<String, dynamic> data) {
     String formattedDate = "N/A";
@@ -877,9 +916,44 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
             const SizedBox(width: 12),
             Expanded(
               child: ElevatedButton.icon(
-                onPressed: () {
-                  // Rebook
+                onPressed: () async {
+                  final providerId = data['employe_id'];
+
+                  if (providerId == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Provider not found")),
+                    );
+                    return;
+                  }
+
+                  // 🔥 FETCH PROVIDER DATA
+                  final providerSnap = await FirebaseFirestore.instance
+                      .collection("employe_detail")
+                      .doc(providerId)
+                      .get();
+
+                  if (!providerSnap.exists) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text("Provider profile not available")),
+                    );
+                    return;
+                  }
+
+                  final providerData = providerSnap.data()!;
+
+                  // 🔥 NAVIGATE TO PROVIDER PROFILE
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ProviderFullProfile(
+                        customerId: widget.userId,
+                        providerId: providerId,
+                        providerData: providerData,
+                      ),
+                    ),
+                  );
                 },
+
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF8B5CF6),
                   foregroundColor: Colors.white,
@@ -1184,6 +1258,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
                           child: Text(
                             "Booking Details",
                             style: GoogleFonts.inter(
+                              color: Colors.black,
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
                             ),
@@ -1385,6 +1460,7 @@ Widget _infoCard({
               Text(
                 value,
                 style: GoogleFonts.inter(
+                  color: Colors.black,
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1416,6 +1492,7 @@ Widget _problemCard(String problem) {
             Text(
               "Problem Description",
               style: TextStyle(
+
                 fontWeight: FontWeight.w800,
                 color: Color(0xFFEF4444),
               ),
@@ -1426,6 +1503,7 @@ Widget _problemCard(String problem) {
         Text(
           problem,
           style: GoogleFonts.inter(
+            color: Colors.black,
             fontSize: 14,
             height: 1.5,
           ),
@@ -1445,6 +1523,7 @@ Widget _amountRow(String label, dynamic amount,
         Text(
           label,
           style: GoogleFonts.inter(
+            color: Colors.black,
             fontSize: isTotal ? 15 : 14,
             fontWeight: isTotal ? FontWeight.w800 : FontWeight.w600,
           ),

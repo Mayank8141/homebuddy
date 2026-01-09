@@ -51,6 +51,11 @@ dependencies:
   shimmer: ^3.0.0
   url_launcher:
   flutter_launcher_icons: ^0.13.1
+  pdf: ^3.10.8
+  printing:
+  path_provider: ^2.1.2
+  open_filex:
+
 
 
 dev_dependencies:
@@ -85,6 +90,8 @@ flutter:
     - assets/images/logo1.png
     - assets/images/splash.png
     - assets/cities_list/cities-name-list.json
+    - assets/fonts/Roboto/static/
+
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
