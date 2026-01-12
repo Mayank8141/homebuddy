@@ -278,6 +278,9 @@ class _EmployeProfileState extends State<EmployeProfile> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
             child: const Text("Logout"),
           ),

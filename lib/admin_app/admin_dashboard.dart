@@ -754,7 +754,7 @@ class _admin_dashboardState extends State<admin_dashboard> {
   void showLogoutConfirmation(BuildContext context) {
     showDialog(
       context: context,
-      barrierDismissible: false,
+     // barrierDismissible: false,
       builder: (context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(

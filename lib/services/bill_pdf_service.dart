@@ -58,7 +58,7 @@ class BillPdfService {
                 pw.SizedBox(height: 20),
 
                 // PAYMENT STATUS
-                _buildPaymentStatus(bill),
+                //_buildPaymentStatus(bill),
 
                 pw.Spacer(),
 
@@ -110,7 +110,7 @@ class BillPdfService {
               ),
               pw.SizedBox(height: 4),
               pw.Text(
-                "Home Service Solutions",
+                "Home Service",
                 style: pw.TextStyle(
                   fontSize: 12,
                   color: PdfColors.grey700,
@@ -125,7 +125,7 @@ class BillPdfService {
                 ),
               ),
               pw.Text(
-                "Phone: 1800-XXX-XXXX",
+                "Phone: 1234567890",
                 style: const pw.TextStyle(
                   fontSize: 10,
                   color: PdfColors.grey600,
@@ -218,7 +218,7 @@ class BillPdfService {
                   ),
                 ),
                 pw.SizedBox(height: 10),
-                _buildDetailRow("Service:", service?["name"] ?? "--"),
+                _buildDetailRow("Service Name:", service?["name"] ?? "--"),
                 pw.SizedBox(height: 4),
                 _buildDetailRow(
                   "Service Date:",
@@ -271,13 +271,14 @@ class BillPdfService {
                 pw.SizedBox(height: 4),
                 _buildDetailRow(
                   "Contact:",
-                  employee?["mobile"] ?? "--",
+                  employee?["phone"] ?? "--",
                 ),
                 pw.SizedBox(height: 4),
                 _buildDetailRow(
                   "Service Type:",
                   service?["name"] ?? "--",
                 ),
+                pw.SizedBox(height: 14),
               ],
             ),
           ),
@@ -322,9 +323,9 @@ class BillPdfService {
             ),
             // Service Amount Row
             pw.TableRow(
-              decoration: const pw.BoxDecoration(
-                color: PdfColors.grey200,
-              ),
+              // decoration: const pw.BoxDecoration(
+              //   color: PdfColors.grey200,
+              // ),
               children: [
                 _buildTableCell("Service Charge"),
                 _buildTableCell(
@@ -335,6 +336,7 @@ class BillPdfService {
             ),
             // Visit Charge Row
             pw.TableRow(
+
               children: [
                 _buildTableCell("Visit Charge"),
                 _buildTableCell(
@@ -345,7 +347,7 @@ class BillPdfService {
             ),
           ],
         ),
-        pw.SizedBox(height: 2),
+        pw.SizedBox(height: 10),
         // Total Row
         pw.Container(
           padding: const pw.EdgeInsets.all(12),
@@ -453,7 +455,7 @@ class BillPdfService {
           ),
           pw.SizedBox(height: 12),
           pw.Text(
-            "For any queries or support, contact us at support@homebuddy.com or call 1800-XXX-XXXX",
+            "For any queries or support, contact us at support@homebuddy.com or call 1234567890",
             style: const pw.TextStyle(
               fontSize: 9,
               color: PdfColors.grey500,
@@ -508,6 +510,7 @@ class BillPdfService {
             ),
           ),
         ),
+        
         pw.Expanded(
           flex: 3,
           child: pw.Text(

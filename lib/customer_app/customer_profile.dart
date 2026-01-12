@@ -873,7 +873,7 @@ class _customer_profileState extends State<customer_profile>
             ),
             child: Text(
               "Logout",
-              style: GoogleFonts.inter(fontWeight: FontWeight.w700),
+              style: GoogleFonts.inter(fontWeight: FontWeight.w700,color: Colors.white),
             ),
           ),
         ],

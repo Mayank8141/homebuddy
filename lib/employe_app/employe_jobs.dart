@@ -949,149 +949,251 @@ class JobCard extends StatelessWidget {
   });
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
+    return InkWell(
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.06),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            /// SERVICE + STATUS
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: FutureBuilder<DocumentSnapshot>(
-                    future: FirebaseFirestore.instance
-                        .collection("services")
-                        .doc(serviceId)
-                        .get(),
-                    builder: (context, snap) {
-                      if (!snap.hasData)
-                        return const Text(
-                          "Loading...",
-                          style: TextStyle(fontSize: 16),
-                        );
-                      return Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1ABC9C).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Icon(
-                              Icons.home_repair_service_rounded,
-                              color: Color(0xFF1ABC9C),
-                              size: 20,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              snap.data!["name"],
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-                const SizedBox(width: 8),
-                statusBadge(status),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            /// CUSTOMER DETAILS
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection("customer_detail")
-                  .doc(customerId)
-                  .get(),
-              builder: (context, snap) {
-                if (!snap.hasData)
-                  return const Text(
-                    "Loading customer...",
-                    style: TextStyle(fontSize: 14, color: Colors.grey),
-                  );
-                final c = snap.data!;
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    infoRow(Icons.person_outline_rounded, customerName),
-                    const SizedBox(height: 10),
-                    infoRow(Icons.phone_outlined, customerPhone),
-                    const SizedBox(height: 10),
-                    infoRow(Icons.location_on_rounded, customerAddress),
-
-                  ],
-                );
-              },
-            ),
-
-            const SizedBox(height: 10),
-            infoRow(Icons.calendar_today_rounded, formatDate(serviceDate)),
-
-            if (problem.isNotEmpty) ...[
-              const SizedBox(height: 10),
-              infoRow(Icons.description_outlined, problem),
-            ],
-
-            const SizedBox(height: 20),
-
-            /// ACTION BUTTON
-            SizedBox(
-              width: double.infinity,
-              height: 50,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: status == "Completed"
-                      ? Colors.grey[400]
-                      : const Color(0xFF1ABC9C),
-                  foregroundColor: Colors.white,
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                ),
-                onPressed: status == "Accepted"
-                    ? () => showAmountDialog(context)
-                    : status == "Started"
-                    ? () => completeJob()
-                    : null,
-                child: Text(
-                  status == "Accepted"
-                      ? "Start Job"
-                      : status == "Started"
-                      ? "Complete Job"
-                      : "Completed",
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
+        onTap: () {
+          _showBookingDetails(context);
+        },
+        child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.06),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              /// SERVICE + STATUS
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1ABC9C).withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.home_repair_service_rounded,
+                            color: Color(0xFF1ABC9C),
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            serviceName,
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  statusBadge(status),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              /// CUSTOMER DETAILS
+              // FutureBuilder<DocumentSnapshot>(
+              //   future: FirebaseFirestore.instance
+              //       .collection("customer_detail")
+              //       .doc(customerId)
+              //       .get(),
+              //   builder: (context, snap) {
+              //     if (!snap.hasData)
+              //       return const Text(
+              //         "Loading customer...",
+              //         style: TextStyle(fontSize: 14, color: Colors.grey),
+              //       );
+              //     final c = snap.data!;
+              //     return Column(
+              //       crossAxisAlignment: CrossAxisAlignment.start,
+              //       children: [
+              //         infoRow(Icons.person_outline_rounded, customerName),
+              //         const SizedBox(height: 10),
+              //         infoRow(Icons.phone_outlined, customerPhone),
+              //         const SizedBox(height: 10),
+              //         infoRow(Icons.location_on_rounded, customerAddress),
+              //
+              //       ],
+              //     );
+              //   },
+              // ),
+
+              const SizedBox(height: 10),
+              infoRow(Icons.calendar_today_rounded, formatDate(serviceDate)),
+
+              if (problem.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                infoRow(Icons.description_outlined, problem),
+              ],
+
+              const SizedBox(height: 20),
+
+              /// ACTION BUTTON
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: status == "Completed"
+                        ? Colors.grey[400]
+                        : const Color(0xFF1ABC9C),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                  ),
+                  onPressed: status == "Accepted"
+                      ? () => showAmountDialog(context)
+                      : status == "Started"
+                      ? () => completeJob()
+                      : null,
+                  child: Text(
+                    status == "Accepted"
+                        ? "Start Job"
+                        : status == "Started"
+                        ? "Complete Job"
+                        : "Completed",
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        )
+    );
+  }
+
+  void _showBookingDetails(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              // HEADER
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        "Booking Details",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(height: 1),
+
+              // BODY
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _detailRow("Service", serviceName),
+                      _detailRow("Customer", customerName),
+                      _detailRow("Phone", customerPhone),
+                      _detailRow("Address", customerAddress),
+                      _detailRow("Date", formatDate(serviceDate)),
+                      _detailRow("Status", status),
+
+                      if (problem.isNotEmpty) ...[
+                        const SizedBox(height: 12),
+                        const Text(
+                          "Problem Description",
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          problem,
+                          style: TextStyle(
+                            color: Colors.grey[700],
+                            height: 1.5,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _detailRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text(
+              label,
+              style: TextStyle(
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: const TextStyle(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
