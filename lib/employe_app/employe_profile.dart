@@ -19,7 +19,9 @@ class EmployeProfile extends StatefulWidget {
   State<EmployeProfile> createState() => _EmployeProfileState();
 }
 
-class _EmployeProfileState extends State<EmployeProfile> {
+class _EmployeProfileState extends State<EmployeProfile>
+{
+
   Map<String, dynamic>? profile;
 
   final nameCtrl = TextEditingController();
@@ -132,7 +134,8 @@ class _EmployeProfileState extends State<EmployeProfile> {
             ),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
@@ -149,13 +152,16 @@ class _EmployeProfileState extends State<EmployeProfile> {
             ),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10)),
           ),
         );
       }
     }
 
     setState(() => imageUploading = false);
+
+
   }
 
 
@@ -278,9 +284,6 @@ class _EmployeProfileState extends State<EmployeProfile> {
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
             ),
             child: const Text("Logout"),
           ),
@@ -560,39 +563,47 @@ class _EmployeProfileState extends State<EmployeProfile> {
     final imageUrl = profile!['image'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFF1ABC9C),
+      backgroundColor: Colors.white,
+
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white, // ✅ IMPORTANT (removes purple tint)
+        scrolledUnderElevation: 0,       // ✅ Prevents color overlay on scroll
+        elevation: 0,
+        centerTitle: true,
+        // leading: IconButton(
+        //   icon: const Icon(Icons.arrow_back, color: Colors.black),
+        //   onPressed: () {
+        //     Navigator.push(
+        //       context,
+        //       MaterialPageRoute(builder: (context) =>  HomeScreen()),
+        //     );
+        //   },
+        // ),
+        title: const Text(
+          "My Profile",
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        actions: [
+          if (completed)
+            IconButton(
+              icon: const Icon(Icons.edit, color: Colors.black),
+              onPressed:  () {
+                Navigator.pop(context);
+              },
+            ),
+        ],
+      ),
+
       body: SafeArea(
         child: Column(
           children: [
             // Header
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  const Spacer(),
-                  const Text(
-                    "My Profile",
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const Spacer(),
-                  if (completed)
-                    IconButton(
-                      onPressed: openProfileSheet,
-                      icon: const Icon(Icons.edit, color: Colors.white),
-                    )
-                  else
-                    const SizedBox(width: 48),
-                ],
-              ),
-            ),
+
 
             // White Content Area
             Expanded(
@@ -849,32 +860,32 @@ class _EmployeProfileState extends State<EmployeProfile> {
 
                       // Settings & Support Section
 
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                completed ? "Settings & Support" : "Settings & Support",
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black87,
-                                ),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              completed ? "Settings & Support" : "Settings & Support",
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
                               ),
+                            ),
 
-                              const SizedBox(height: 16),
+                            const SizedBox(height: 16),
 
-                              _menuTile(
-                                Icons.logout,
-                                "Logout",
-                                logout,
-                                textColor: Colors.red,
-                              ),
-                            ],
-                          ),
+                            _menuTile(
+                              Icons.logout,
+                              "Logout",
+                              logout,
+                              textColor: Colors.red,
+                            ),
+                          ],
                         ),
+                      ),
 
                       const SizedBox(height: 32),
                     ],

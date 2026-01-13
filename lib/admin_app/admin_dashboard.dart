@@ -67,30 +67,30 @@ class _admin_dashboardState extends State<admin_dashboard> {
   }
 
   // ================= NAV =================
-  void onTabTap(int index) {
-    if (index == selectedIndex) return;
-
-    setState(() => selectedIndex = index);
-
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => admin_user_list()),
-      );
-    }
-    if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => admin_employe_list()),
-      );
-    }
-    if (index == 3) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => admin_services()),
-      );
-    }
-  }
+  // void onTabTap(int index) {
+  //   if (index == selectedIndex) return;
+  //
+  //   setState(() => selectedIndex = index);
+  //
+  //   if (index == 1) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (_) => admin_user_list()),
+  //     );
+  //   }
+  //   if (index == 2) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (_) => admin_employe_list()),
+  //     );
+  //   }
+  //   if (index == 3) {
+  //     Navigator.push(
+  //       context,
+  //       MaterialPageRoute(builder: (_) => admin_services()),
+  //     );
+  //   }
+  // }
 
   // ================= SHIMMER LOADING =================
   Widget _buildShimmerCard() {
@@ -336,85 +336,85 @@ class _admin_dashboardState extends State<admin_dashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FD),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        titleSpacing: 20,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: const Icon(Icons.menu_rounded, color: Colors.black87),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Admin Dashboard",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                letterSpacing: 0.2,
-              ),
-            ),
-            Text(
-              "Home Service Management",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          StreamBuilder<int>(
-            stream: adminUnreadNotificationCount(),
-            builder: (context, snapshot) {
-              final count = snapshot.data ?? 0;
-
-              return Stack(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const AdminNotificationScreen(),
-                        ),
-                      );
-                    },
-                  ),
-                  if (count > 0)
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          count > 9 ? "9+" : "$count",
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: Colors.white,
+      //   elevation: 0,
+      //   titleSpacing: 20,
+      //   leading: Builder(
+      //     builder: (context) => IconButton(
+      //       icon: const Icon(Icons.menu_rounded, color: Colors.black87),
+      //       onPressed: () => Scaffold.of(context).openDrawer(),
+      //     ),
+      //   ),
+      //   title: Column(
+      //     crossAxisAlignment: CrossAxisAlignment.start,
+      //     children: [
+      //       const Text(
+      //         "Admin Dashboard",
+      //         style: TextStyle(
+      //           fontSize: 20,
+      //           fontWeight: FontWeight.bold,
+      //           color: Colors.black87,
+      //           letterSpacing: 0.2,
+      //         ),
+      //       ),
+      //       Text(
+      //         "Home Service Management",
+      //         style: TextStyle(
+      //           fontSize: 12,
+      //           color: Colors.grey[600],
+      //           fontWeight: FontWeight.w500,
+      //         ),
+      //       ),
+      //     ],
+      //   ),
+      //   actions: [
+      //     StreamBuilder<int>(
+      //       stream: adminUnreadNotificationCount(),
+      //       builder: (context, snapshot) {
+      //         final count = snapshot.data ?? 0;
+      //
+      //         return Stack(
+      //           children: [
+      //             IconButton(
+      //               icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
+      //               onPressed: () {
+      //                 Navigator.push(
+      //                   context,
+      //                   MaterialPageRoute(
+      //                     builder: (_) => const AdminNotificationScreen(),
+      //                   ),
+      //                 );
+      //               },
+      //             ),
+      //             if (count > 0)
+      //               Positioned(
+      //                 right: 10,
+      //                 top: 10,
+      //                 child: Container(
+      //                   padding: const EdgeInsets.all(5),
+      //                   decoration: const BoxDecoration(
+      //                     color: Colors.red,
+      //                     shape: BoxShape.circle,
+      //                   ),
+      //                   child: Text(
+      //                     count > 9 ? "9+" : "$count",
+      //                     style: const TextStyle(
+      //                       color: Colors.white,
+      //                       fontSize: 10,
+      //                       fontWeight: FontWeight.bold,
+      //                     ),
+      //                   ),
+      //                 ),
+      //               ),
+      //           ],
+      //         );
+      //       },
+      //     ),
+      //     const SizedBox(width: 8),
+      //   ],
+      //
+      // ),
 
       // ================= DRAWER =================
       drawer: Drawer(
@@ -668,48 +668,48 @@ class _admin_dashboardState extends State<admin_dashboard> {
         ),
       ),
 
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: BottomNavigationBar(
-            currentIndex: selectedIndex,
-            onTap: onTabTap,
-            selectedItemColor: const Color(0xFF1ABC9C),
-            unselectedItemColor: Colors.grey,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-            type: BottomNavigationBarType.fixed,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_rounded),
-                label: "Home",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.people_rounded),
-                label: "Users",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.engineering_rounded),
-                label: "Providers",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_repair_service_rounded),
-                label: "Services",
-              ),
-            ],
-          ),
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black.withOpacity(0.05),
+      //         blurRadius: 10,
+      //         offset: const Offset(0, -5),
+      //       ),
+      //     ],
+      //   ),
+      //   child: SafeArea(
+      //     child: BottomNavigationBar(
+      //       currentIndex: selectedIndex,
+      //       onTap: onTabTap,
+      //       selectedItemColor: const Color(0xFF1ABC9C),
+      //       unselectedItemColor: Colors.grey,
+      //       selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+      //       type: BottomNavigationBarType.fixed,
+      //       elevation: 0,
+      //       backgroundColor: Colors.transparent,
+      //       items: const [
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.dashboard_rounded),
+      //           label: "Home",
+      //         ),
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.people_rounded),
+      //           label: "Users",
+      //         ),
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.engineering_rounded),
+      //           label: "Providers",
+      //         ),
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.home_repair_service_rounded),
+      //           label: "Services",
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+
     );
   }
 

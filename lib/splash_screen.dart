@@ -153,7 +153,9 @@ class _SplashScreenState extends State<SplashScreen>
 
     // ================= ADMIN =================
     if (role == "admin") {
-      _goTo(admin_dashboard(uid: user.uid));
+      //_goTo(admin_dashboard(uid: user.uid));
+      _goTo(AdminMain(uid: user.uid));
+
       return;
     }
 

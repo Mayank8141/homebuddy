@@ -592,37 +592,39 @@ class _admin_user_listState extends State<admin_user_list> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FD),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, size: 20),
-          color: Colors.black87,
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "User Management",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-                letterSpacing: 0.2,
-              ),
-            ),
-            Text(
-              "Manage all customers",
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
+      // appBar: AppBar(
+      //   backgroundColor: Colors.white,
+      //   elevation: 0,
+      //   // leading: IconButton(
+      //   //   icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+      //   //   color: Colors.black87,
+      //   //   onPressed: () => Navigator.pop(context),
+      //   // ),
+      //   title: const Column(
+      //     crossAxisAlignment: CrossAxisAlignment.start,
+      //     children: [
+      //       Center(
+      //         child: Text(
+      //           "User Management",
+      //           style: TextStyle(
+      //             fontSize: 20,
+      //             fontWeight: FontWeight.bold,
+      //             color: Colors.black87,
+      //             letterSpacing: 0.2,
+      //           ),
+      //         ),
+      //       ),
+      //       // Text(
+      //       //   "Manage all customers",
+      //       //   style: TextStyle(
+      //       //     fontSize: 12,
+      //       //     color: Colors.grey,
+      //       //     fontWeight: FontWeight.w500,
+      //       //   ),
+      //       // ),
+      //     ],
+      //   ),
+      // ),
       body: Column(
         children: [
           Container(
@@ -630,6 +632,7 @@ class _admin_user_listState extends State<admin_user_list> {
             padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
             child: Column(
               children: [
+                const Divider(height: 5),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -699,65 +702,65 @@ class _admin_user_listState extends State<admin_user_list> {
           ),
         ],
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: BottomNavigationBar(
-            currentIndex: selectedIndex,
-            onTap: (i) {
-              if (i == selectedIndex) return;
-              if (i == 0)
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => admin_dashboard(uid: '')),
-                );
-              if (i == 2)
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => admin_employe_list()),
-                );
-              if (i == 3)
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (_) => admin_services()),
-                );
-            },
-            selectedItemColor: const Color(0xFF1ABC9C),
-            unselectedItemColor: Colors.grey,
-            selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-            type: BottomNavigationBarType.fixed,
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.dashboard_rounded),
-                label: "Dashboard",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.people_rounded),
-                label: "Users",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.engineering_rounded),
-                label: "Providers",
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_repair_service_rounded),
-                label: "Services",
-              ),
-            ],
-          ),
-        ),
-      ),
+      // bottomNavigationBar: Container(
+      //   decoration: BoxDecoration(
+      //     color: Colors.white,
+      //     boxShadow: [
+      //       BoxShadow(
+      //         color: Colors.black.withOpacity(0.05),
+      //         blurRadius: 10,
+      //         offset: const Offset(0, -5),
+      //       ),
+      //     ],
+      //   ),
+      //   child: SafeArea(
+      //     child: BottomNavigationBar(
+      //       currentIndex: selectedIndex,
+      //       onTap: (i) {
+      //         if (i == selectedIndex) return;
+      //         if (i == 0)
+      //           Navigator.pushReplacement(
+      //             context,
+      //             MaterialPageRoute(builder: (_) => admin_dashboard(uid: '')),
+      //           );
+      //         if (i == 2)
+      //           Navigator.pushReplacement(
+      //             context,
+      //             MaterialPageRoute(builder: (_) => admin_employe_list()),
+      //           );
+      //         if (i == 3)
+      //           Navigator.pushReplacement(
+      //             context,
+      //             MaterialPageRoute(builder: (_) => admin_services()),
+      //           );
+      //       },
+      //       selectedItemColor: const Color(0xFF1ABC9C),
+      //       unselectedItemColor: Colors.grey,
+      //       selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+      //       type: BottomNavigationBarType.fixed,
+      //       elevation: 0,
+      //       backgroundColor: Colors.transparent,
+      //       items: const [
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.dashboard_rounded),
+      //           label: "Dashboard",
+      //         ),
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.people_rounded),
+      //           label: "Users",
+      //         ),
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.engineering_rounded),
+      //           label: "Providers",
+      //         ),
+      //         BottomNavigationBarItem(
+      //           icon: Icon(Icons.home_repair_service_rounded),
+      //           label: "Services",
+      //         ),
+      //       ],
+      //     ),
+      //   ),
+      // ),
     );
   }
 }

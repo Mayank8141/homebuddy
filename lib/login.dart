@@ -691,7 +691,10 @@ class _login_screenState extends State<login_screen> {
         showSnack("Admin login successful!", Colors.green);
         await Future.delayed(const Duration(milliseconds: 600));
 
-        goTo(admin_dashboard(uid: uid));
+        //goTo(admin_dashboard(uid: uid));
+
+        goTo(AdminMain(uid: uid));
+
         return;
       }
 
