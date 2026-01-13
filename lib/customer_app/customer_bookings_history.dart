@@ -1623,6 +1623,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../services/bill_pdf_service.dart';
 import 'customer_provider_profile.dart';
@@ -1640,12 +1641,85 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String selectedStatus = "All";
+  bool _isLoading = true;
+
+  List<QueryDocumentSnapshot> _allBookings = [];
+  Map<String, String> _serviceNames = {};
+
+
+
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _loadAllData();
   }
+
+
+  Future<void> _loadAllData() async {
+    try {
+      // 1️⃣ Fetch bookings
+      final bookingSnap = await FirebaseFirestore.instance
+          .collection('booking_details')
+          .where('customer_id', isEqualTo: widget.userId)
+          .get();
+
+      final bookings = bookingSnap.docs;
+
+      // Sort by date
+      bookings.sort((a, b) {
+        final aDate = (a.data() as Map<String, dynamic>)['service_date'];
+        final bDate = (b.data() as Map<String, dynamic>)['service_date'];
+
+        if (aDate == null && bDate == null) return 0;
+        if (aDate == null) return 1;
+        if (bDate == null) return -1;
+        if (aDate is! Timestamp || bDate is! Timestamp) return 0;
+
+        return bDate.toDate().compareTo(aDate.toDate());
+      });
+
+      // 2️⃣ Collect service IDs
+      final serviceIds = bookings
+          .map((e) => (e.data() as Map<String, dynamic>)['service_id'])
+          .where((id) => id != null)
+          .toSet();
+
+      // 3️⃣ Fetch services
+      final Map<String, String> services = {};
+
+      for (final id in serviceIds) {
+        final snap = await FirebaseFirestore.instance
+            .collection('services')
+            .doc(id)
+            .get();
+
+        if (snap.exists) {
+          services[id] = (snap.data()!['name'] ?? "Service").toString();
+        }
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _allBookings = bookings;
+        _serviceNames = services;
+        _isLoading = false; // 🔥 UI unlocks ONLY HERE
+      });
+    } catch (e) {
+      debugPrint("Load error: $e");
+
+      if (!mounted) return;
+
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+
+
 
   @override
   void dispose() {
@@ -1731,97 +1805,193 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
     );
   }
 
+  // Widget _buildBookingsList() {
+  //   return StreamBuilder<QuerySnapshot>(
+  //     stream: FirebaseFirestore.instance
+  //         .collection('booking_details')
+  //         .where('customer_id', isEqualTo: widget.userId)
+  //         //.orderBy('service_date', descending: true)
+  //         .snapshots(),
+  //     builder: (context, snapshot) {
+  //       if (snapshot.connectionState == ConnectionState.waiting) {
+  //         return Center(
+  //           child: CircularProgressIndicator(
+  //             color: const Color(0xFF00BFA5),
+  //             strokeWidth: 2.5,
+  //           ),
+  //         );
+  //       }
+  //
+  //       if (snapshot.hasError) {
+  //         return _buildEmptyState(
+  //           icon: Icons.error_outline,
+  //           title: "Something went wrong",
+  //           subtitle: "Please try again later",
+  //         );
+  //       }
+  //
+  //       if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+  //         return _buildEmptyState(
+  //           icon: Icons.event_note_outlined,
+  //           title: "No bookings yet",
+  //           subtitle: "Your booking history will appear here",
+  //         );
+  //       }
+  //
+  //       //var allBookings = snapshot.data!.docs;
+  //
+  //       var allBookings = snapshot.data!.docs.toList();
+  //
+  //       allBookings.sort((a, b) {
+  //         final aData = a.data() as Map<String, dynamic>;
+  //         final bData = b.data() as Map<String, dynamic>;
+  //
+  //         final aDate = aData['service_date'];
+  //         final bDate = bData['service_date'];
+  //
+  //         if (aDate == null && bDate == null) return 0;
+  //         if (aDate == null) return 1;
+  //         if (bDate == null) return -1;
+  //
+  //         return (bDate as Timestamp)
+  //             .toDate()
+  //             .compareTo((aDate as Timestamp).toDate());
+  //       });
+  //
+  //
+  //       var filteredBookings = selectedStatus == "All"
+  //           ? allBookings
+  //           : allBookings.where((doc) {
+  //         final data = doc.data() as Map<String, dynamic>;
+  //         return (data['status'] ?? 'Pending') == selectedStatus;
+  //       }).toList();
+  //
+  //       if (filteredBookings.isEmpty) {
+  //         return _buildEmptyState(
+  //           icon: Icons.event_busy_outlined,
+  //           title: "No $selectedStatus bookings",
+  //           subtitle: "You don't have any $selectedStatus bookings",
+  //         );
+  //       }
+  //
+  //       return ListView.separated(
+  //         padding: const EdgeInsets.symmetric(vertical: 16),
+  //         physics: const BouncingScrollPhysics(),
+  //         itemCount: filteredBookings.length,
+  //         separatorBuilder: (context, index) => const Divider(
+  //           height: 1,
+  //           indent: 20,
+  //           endIndent: 20,
+  //         ),
+  //         itemBuilder: (context, index) {
+  //           final data =
+  //           filteredBookings[index].data() as Map<String, dynamic>;
+  //           return _buildBookingItem(data);
+  //         },
+  //       );
+  //     },
+  //   );
+  // }
+
   Widget _buildBookingsList() {
-    return StreamBuilder<QuerySnapshot>(
-      stream: FirebaseFirestore.instance
-          .collection('booking_details')
-          .where('customer_id', isEqualTo: widget.userId)
-          //.orderBy('service_date', descending: true)
-          .snapshots(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: const Color(0xFF00BFA5),
-              strokeWidth: 2.5,
+    if (_isLoading) {
+      return _buildShimmerList(); // 🔥 ONLY shimmer
+    }
+
+    if (_allBookings.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.event_note_outlined,
+        title: "No bookings yet",
+        subtitle: "Your booking history will appear here",
+      );
+    }
+
+    final filteredBookings = selectedStatus == "All"
+        ? _allBookings
+        : _allBookings.where((doc) {
+      final data = doc.data() as Map<String, dynamic>;
+      return (data['status'] ?? 'Pending') == selectedStatus;
+    }).toList();
+
+    if (filteredBookings.isEmpty) {
+      return _buildEmptyState(
+        icon: Icons.event_busy_outlined,
+        title: "No $selectedStatus bookings",
+        subtitle: "You don't have any $selectedStatus bookings",
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: filteredBookings.length,
+      separatorBuilder: (_, __) => const Divider(height: 1),
+      itemBuilder: (context, index) {
+        final data =
+        filteredBookings[index].data() as Map<String, dynamic>;
+        return _buildBookingItem(data);
+      },
+    );
+  }
+
+
+
+
+  Widget _buildShimmerList() {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Shimmer.fromColors(
+            baseColor: Colors.grey.shade300,
+            highlightColor: Colors.grey.shade100,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(height: 20, width: 80, decoration: _shimmerBox()),
+                const SizedBox(height: 12),
+                Container(height: 16, width: double.infinity, decoration: _shimmerBox()),
+                const SizedBox(height: 8),
+                Container(height: 14, width: 150, decoration: _shimmerBox()),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Container(height: 14, width: 80, decoration: _shimmerBox()),
+                    const Spacer(),
+                    Container(height: 18, width: 60, decoration: _shimmerBox()),
+                  ],
+                ),
+              ],
             ),
-          );
-        }
-
-        if (snapshot.hasError) {
-          return _buildEmptyState(
-            icon: Icons.error_outline,
-            title: "Something went wrong",
-            subtitle: "Please try again later",
-          );
-        }
-
-        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-          return _buildEmptyState(
-            icon: Icons.event_note_outlined,
-            title: "No bookings yet",
-            subtitle: "Your booking history will appear here",
-          );
-        }
-
-        //var allBookings = snapshot.data!.docs;
-
-        var allBookings = snapshot.data!.docs.toList();
-
-        allBookings.sort((a, b) {
-          final aData = a.data() as Map<String, dynamic>;
-          final bData = b.data() as Map<String, dynamic>;
-
-          final aDate = aData['service_date'];
-          final bDate = bData['service_date'];
-
-          if (aDate == null && bDate == null) return 0;
-          if (aDate == null) return 1;
-          if (bDate == null) return -1;
-
-          return (bDate as Timestamp)
-              .toDate()
-              .compareTo((aDate as Timestamp).toDate());
-        });
-
-
-        var filteredBookings = selectedStatus == "All"
-            ? allBookings
-            : allBookings.where((doc) {
-          final data = doc.data() as Map<String, dynamic>;
-          return (data['status'] ?? 'Pending') == selectedStatus;
-        }).toList();
-
-        if (filteredBookings.isEmpty) {
-          return _buildEmptyState(
-            icon: Icons.event_busy_outlined,
-            title: "No $selectedStatus bookings",
-            subtitle: "You don't have any $selectedStatus bookings",
-          );
-        }
-
-        return ListView.separated(
-          padding: const EdgeInsets.symmetric(vertical: 16),
-          physics: const BouncingScrollPhysics(),
-          itemCount: filteredBookings.length,
-          separatorBuilder: (context, index) => const Divider(
-            height: 1,
-            indent: 20,
-            endIndent: 20,
           ),
-          itemBuilder: (context, index) {
-            final data =
-            filteredBookings[index].data() as Map<String, dynamic>;
-            return _buildBookingItem(data);
-          },
         );
       },
     );
   }
 
+  BoxDecoration _shimmerBox() {
+    return BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+    );
+  }
+
+
   Widget _buildBookingItem(Map<String, dynamic> data) {
     final status = data['status'] ?? 'Pending';
     final statusColor = _getStatusColor(status);
+
+    /// 🔥 FIX: Normalize service_id (String or DocumentReference)
+    final rawServiceId = data['service_id'];
+    final String? serviceId = rawServiceId is String
+        ? rawServiceId
+        : rawServiceId is DocumentReference
+        ? rawServiceId.id
+        : null;
+
+    final String serviceName =
+    serviceId != null ? (_serviceNames[serviceId] ?? "") : "";
 
     return InkWell(
       onTap: () {
@@ -1866,27 +2036,14 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
 
             const SizedBox(height: 12),
 
-            // Service Name
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
-                  .collection('services')
-                  .doc(data['service_id'])
-                  .get(),
-              builder: (context, snapshot) {
-                final serviceName = snapshot.hasData && snapshot.data!.exists
-                    ? (snapshot.data!.data()
-                as Map<String, dynamic>)['name']
-                    : "Service";
-
-                return Text(
-                  serviceName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF1A1D1E),
-                  ),
-                );
-              },
+            // ✅ Service Name (NO FutureBuilder, NO loading text)
+            Text(
+              serviceName.isNotEmpty ? serviceName : " ",
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1A1D1E),
+              ),
             ),
 
             const SizedBox(height: 8),
@@ -1981,15 +2138,13 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
                           return;
                         }
 
-                        final providerData = providerSnap.data()!;
-
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => ProviderFullProfile(
                               customerId: widget.userId,
                               providerId: providerId,
-                              providerData: providerData,
+                              providerData: providerSnap.data()!,
                             ),
                           ),
                         );
@@ -2049,6 +2204,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
       ),
     );
   }
+
 
   Widget _buildEmptyState({
     required IconData icon,

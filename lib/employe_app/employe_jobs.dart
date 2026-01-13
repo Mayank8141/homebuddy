@@ -1201,133 +1201,345 @@ class JobCard extends StatelessWidget {
   ////////////////////////////////////////////////////////////
   /// START JOB
   ////////////////////////////////////////////////////////////
+  // void showAmountDialog(BuildContext context) {
+  //   final TextEditingController amountCtrl = TextEditingController();
+  //
+  //   showDialog(
+  //     context: context,
+  //     barrierDismissible: false,
+  //     builder: (_) => AlertDialog(
+  //       shape: RoundedRectangleBorder(
+  //         borderRadius: BorderRadius.circular(20),
+  //       ),
+  //       title: const Text(
+  //         "Enter Service Amount",
+  //         style: TextStyle(
+  //           fontWeight: FontWeight.bold,
+  //           fontSize: 20,
+  //         ),
+  //       ),
+  //       content: TextField(
+  //         controller: amountCtrl,
+  //         keyboardType: TextInputType.number,
+  //         autofocus: true,
+  //         style: const TextStyle(
+  //           fontSize: 18,
+  //           fontWeight: FontWeight.w600,
+  //         ),
+  //         decoration: InputDecoration(
+  //           prefixText: "₹ ",
+  //           prefixStyle: const TextStyle(
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.w600,
+  //             color: Colors.black87,
+  //           ),
+  //           hintText: "Service charge only",
+  //           filled: true,
+  //           fillColor: Colors.grey[50],
+  //           border: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(14),
+  //             borderSide: BorderSide.none,
+  //           ),
+  //           enabledBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(14),
+  //             borderSide: BorderSide(color: Colors.grey[200]!),
+  //           ),
+  //           focusedBorder: OutlineInputBorder(
+  //             borderRadius: BorderRadius.circular(14),
+  //             borderSide: const BorderSide(
+  //               color: Color(0xFF1ABC9C),
+  //               width: 2,
+  //             ),
+  //           ),
+  //           contentPadding: const EdgeInsets.symmetric(
+  //             horizontal: 20,
+  //             vertical: 16,
+  //           ),
+  //         ),
+  //       ),
+  //       actions: [
+  //         TextButton(
+  //           onPressed: () => Navigator.pop(context),
+  //           child: Text(
+  //             "Cancel",
+  //             style: TextStyle(
+  //               color: Colors.grey[600],
+  //               fontSize: 15,
+  //               fontWeight: FontWeight.w600,
+  //             ),
+  //           ),
+  //         ),
+  //         ElevatedButton(
+  //           style: ElevatedButton.styleFrom(
+  //             backgroundColor: const Color(0xFF1ABC9C),
+  //             foregroundColor: Colors.white,
+  //             elevation: 0,
+  //             shape: RoundedRectangleBorder(
+  //               borderRadius: BorderRadius.circular(12),
+  //             ),
+  //             padding: const EdgeInsets.symmetric(
+  //               horizontal: 24,
+  //               vertical: 12,
+  //             ),
+  //           ),
+  //           child: const Text(
+  //             "Confirm",
+  //             style: TextStyle(
+  //               fontSize: 15,
+  //               fontWeight: FontWeight.w600,
+  //             ),
+  //           ),
+  //           onPressed: () async {
+  //             final serviceAmount = double.tryParse(amountCtrl.text.trim());
+  //
+  //             if (serviceAmount == null) return;
+  //
+  //             // ✅ CLOSE DIALOG IMMEDIATELY
+  //             Navigator.pop(context);
+  //
+  //             try {
+  //               final empSnap = await FirebaseFirestore.instance
+  //                   .collection("employe_detail")
+  //                   .doc(employeeId)
+  //                   .get();
+  //
+  //               final rawVisit = empSnap.data()?["visit_charge"] ?? 0;
+  //
+  //               final double visitCharge = rawVisit is num
+  //                   ? rawVisit.toDouble()
+  //                   : double.tryParse(rawVisit.toString()) ?? 0;
+  //
+  //               await FirebaseFirestore.instance
+  //                   .collection("booking_details")
+  //                   .doc(bookingId)
+  //                   .update({
+  //                 "status": "Started",
+  //                 "service_amount": serviceAmount,
+  //                 "visit_charge": visitCharge,
+  //                 "final_amount": serviceAmount + visitCharge,
+  //                 "started_at": Timestamp.now(),
+  //               });
+  //             } catch (e) {
+  //               debugPrint("❌ Start job error: $e");
+  //             }
+  //           },
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
+
+
   void showAmountDialog(BuildContext context) {
-    final TextEditingController amountCtrl = TextEditingController();
+    final TextEditingController serviceCtrl = TextEditingController();
+    bool? customerTookService;
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        title: const Text(
-          "Enter Service Amount",
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
-          ),
-        ),
-        content: TextField(
-          controller: amountCtrl,
-          keyboardType: TextInputType.number,
-          autofocus: true,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-          ),
-          decoration: InputDecoration(
-            prefixText: "₹ ",
-            prefixStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.black87,
-            ),
-            hintText: "Service charge only",
-            filled: true,
-            fillColor: Colors.grey[50],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: Colors.grey[200]!),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: const BorderSide(
-                color: Color(0xFF1ABC9C),
-                width: 2,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 20,
-              vertical: 16,
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              "Cancel",
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1ABC9C),
-              foregroundColor: Colors.white,
-              elevation: 0,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(20),
               ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 12,
+              title: const Text(
+                "Start Job",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
               ),
-            ),
-            child: const Text(
-              "Confirm",
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  /// STEP 1: ASK QUESTION
+                  const Text(
+                    "Did customer take service?",
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: customerTookService == true
+                                ? const Color(0xFF1ABC9C)
+                                : Colors.grey[200],
+                            foregroundColor: customerTookService == true
+                                ? Colors.white
+                                : Colors.black87,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              customerTookService = true;
+                            });
+                          },
+                          child: const Text("Yes"),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: customerTookService == false
+                                ? Colors.redAccent
+                                : Colors.grey[200],
+                            foregroundColor: customerTookService == false
+                                ? Colors.white
+                                : Colors.black87,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              customerTookService = false;
+                            });
+                          },
+                          child: const Text("No"),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  /// STEP 2A: SERVICE AMOUNT
+                  if (customerTookService == true) ...[
+                    const SizedBox(height: 20),
+                    const Text(
+                      "Service Amount",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: serviceCtrl,
+                      keyboardType: TextInputType.number,
+                      autofocus: true,
+                      decoration: InputDecoration(
+                        prefixText: "₹ ",
+                        hintText: "Enter service amount",
+                        filled: true,
+                        fillColor: Colors.grey[50],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                  ],
+
+                  /// STEP 2B: VISIT CHARGE INFO
+                  if (customerTookService == false) ...[
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: Colors.orange.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Text(
+                        "Customer did not take service.\nVisit charge will be applied automatically.",
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
-            ),
-            onPressed: () async {
-              final serviceAmount = double.tryParse(amountCtrl.text.trim());
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(
+                    "Cancel",
+                    style: TextStyle(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1ABC9C),
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  onPressed: customerTookService == null
+                      ? null
+                      : () async {
+                    Navigator.pop(dialogContext);
 
-              if (serviceAmount == null) return;
+                    try {
+                      double serviceAmount = 0;
+                      double visitCharge = 0;
 
-              // ✅ CLOSE DIALOG IMMEDIATELY
-              Navigator.pop(context);
+                      if (customerTookService == true) {
+                        serviceAmount =
+                            double.tryParse(serviceCtrl.text.trim()) ?? 0;
+                      } else {
+                        // 🔥 AUTO FETCH VISIT CHARGE FROM EMPLOYEE
+                        final empSnap = await FirebaseFirestore.instance
+                            .collection("employe_detail")
+                            .doc(employeeId)
+                            .get();
 
-              try {
-                final empSnap = await FirebaseFirestore.instance
-                    .collection("employe_detail")
-                    .doc(employeeId)
-                    .get();
+                        final rawVisit =
+                            empSnap.data()?["visit_charge"] ?? 0;
 
-                final rawVisit = empSnap.data()?["visit_charge"] ?? 0;
+                        visitCharge = rawVisit is num
+                            ? rawVisit.toDouble()
+                            : double.tryParse(
+                            rawVisit.toString()) ??
+                            0;
+                      }
 
-                final double visitCharge = rawVisit is num
-                    ? rawVisit.toDouble()
-                    : double.tryParse(rawVisit.toString()) ?? 0;
-
-                await FirebaseFirestore.instance
-                    .collection("booking_details")
-                    .doc(bookingId)
-                    .update({
-                  "status": "Started",
-                  "service_amount": serviceAmount,
-                  "visit_charge": visitCharge,
-                  "final_amount": serviceAmount + visitCharge,
-                  "started_at": Timestamp.now(),
-                });
-              } catch (e) {
-                debugPrint("❌ Start job error: $e");
-              }
-            },
-          ),
-        ],
-      ),
+                      await FirebaseFirestore.instance
+                          .collection("booking_details")
+                          .doc(bookingId)
+                          .update({
+                        "status": "Started",
+                        "has_service": customerTookService,
+                        "service_amount": serviceAmount,
+                        "visit_charge": visitCharge,
+                        "final_amount":
+                        serviceAmount + visitCharge,
+                        "started_at": Timestamp.now(),
+                      });
+                    } catch (e) {
+                      debugPrint("❌ Start job error: $e");
+                    }
+                  },
+                  child: const Text(
+                    "Confirm",
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
+
 
   ////////////////////////////////////////////////////////////
   /// COMPLETE JOB + BILL + NOTIFICATION
