@@ -2075,9 +2075,9 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
                   ),
                 ),
                 const Spacer(),
-                if (data['visit_charge'] != null) ...[
+                if (data['final_amount'] != null) ...[
                   Text(
-                    "₹${data['visit_charge']}",
+                    "₹${data['final_amount']}",
                     style: const TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w700,
@@ -2085,6 +2085,7 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
                     ),
                   ),
                 ],
+
               ],
             ),
 
@@ -2330,6 +2331,12 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
 
               final booking = snapshot.data!.data() as Map<String, dynamic>;
 
+              final bool hasService =
+                  booking['has_service'] == true ||
+                      booking['has_service'] == "true" ||
+                      booking['has_service'] == 1;
+
+
               return Column(
                 children: [
                   // Header
@@ -2447,16 +2454,27 @@ class _BookingHistoryScreenState extends State<BookingHistoryScreen>
                           ),
                           const SizedBox(height: 16),
 
-                          _amountRow("Visit Charge", booking['visit_charge']),
-                          _amountRow(
-                              "Service Amount", booking['service_amount']),
-                          const SizedBox(height: 8),
-                          const Divider(),
-                          const SizedBox(height: 8),
-                          _amountRow("Total Amount", booking['final_amount'],
-                              isTotal: true),
 
-                          if (booking['started_at'] != null) ...[
+
+              // ✅ CONDITIONAL AMOUNT DISPLAY
+              if (hasService)
+              _amountRow("Service Amount", booking['service_amount'])
+              else
+              _amountRow("Visit Charge", booking['visit_charge']),
+
+              const SizedBox(height: 8),
+              const Divider(),
+              const SizedBox(height: 8),
+
+              // ✅ TOTAL ALWAYS
+              _amountRow(
+              "Total Amount",
+              booking['final_amount'],
+              isTotal: true,
+              ),
+
+
+              if (booking['started_at'] != null) ...[
                             const SizedBox(height: 24),
                             _detailRow(
                               "Started At",

@@ -3012,8 +3012,14 @@ class _BillPaymentPageState extends State<BillPaymentPage> with SingleTickerProv
             ),
           ),
           const Divider(height: 1),
-          _buildAmountRow("Service Amount", bill?["service_amount"]),
-          _buildAmountRow("Visit Charge", bill?["visit_charge"]),
+          // _buildAmountRow("Service Amount", bill?["service_amount"]),
+          // _buildAmountRow("Visit Charge", bill?["visit_charge"]),
+
+          if (booking?["has_service"] == true)
+            _buildAmountRow("Service Amount", bill?["service_amount"])
+          else
+            _buildAmountRow("Visit Charge", bill?["visit_charge"]),
+
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             height: 1,
