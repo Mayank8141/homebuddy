@@ -53,7 +53,9 @@ class BillPdfService {
                 pw.SizedBox(height: 28),
 
                 // BILLING TABLE
-                _buildBillingTable(bill),
+                //_buildBillingTable(bill),
+                _buildBillingTable(bill, booking),
+
 
                 pw.SizedBox(height: 20),
 
@@ -288,7 +290,21 @@ class BillPdfService {
   }
 
   // BILLING TABLE
-  static pw.Widget _buildBillingTable(Map<String, dynamic> bill) {
+  static pw.Widget _buildBillingTable(
+      Map<String, dynamic> bill,
+      Map<String, dynamic>? booking,
+      ) {
+    final bool hasService = booking?["has_service"] == true;
+
+    final double serviceAmount =
+    (booking?["service_amount"] ?? 0).toDouble();
+
+    final double visitCharge =
+    (bill["visit_charge"] ?? 0).toDouble();
+
+    final double totalAmount =
+    hasService ? serviceAmount : visitCharge;
+
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
@@ -297,21 +313,15 @@ class BillPdfService {
           style: pw.TextStyle(
             fontSize: 14,
             fontWeight: pw.FontWeight.bold,
-            color: PdfColors.black,
           ),
         ),
         pw.SizedBox(height: 12),
+
         pw.Table(
-          border: pw.TableBorder.all(
-            color: PdfColors.grey800,
-            width: 1,
-          ),
+          border: pw.TableBorder.all(width: 1),
           children: [
-            // Header Row
             pw.TableRow(
-              decoration: const pw.BoxDecoration(
-                color: PdfColors.grey800,
-              ),
+              decoration: const pw.BoxDecoration(color: PdfColors.grey800),
               children: [
                 _buildTableCell("Description", isHeader: true),
                 _buildTableCell(
@@ -321,58 +331,49 @@ class BillPdfService {
                 ),
               ],
             ),
-            // Service Amount Row
-            pw.TableRow(
-              // decoration: const pw.BoxDecoration(
-              //   color: PdfColors.grey200,
-              // ),
-              children: [
+
+            /// ✅ SERVICE CHARGE (ONLY if service taken)
+            if (hasService)
+              pw.TableRow(children: [
                 _buildTableCell("Service Charge"),
                 _buildTableCell(
-                  "₹ ${bill["service_amount"] ?? 0}",
+                  "₹ $serviceAmount",
                   align: pw.Alignment.centerRight,
                 ),
-              ],
-            ),
-            // Visit Charge Row
-            pw.TableRow(
+              ]),
 
-              children: [
+            /// ✅ VISIT CHARGE (ONLY if service NOT taken)
+            if (!hasService)
+              pw.TableRow(children: [
                 _buildTableCell("Visit Charge"),
                 _buildTableCell(
-                  "₹ ${bill["visit_charge"] ?? 0}",
+                  "₹ $visitCharge",
                   align: pw.Alignment.centerRight,
                 ),
-              ],
-            ),
+              ]),
           ],
         ),
+
         pw.SizedBox(height: 10),
-        // Total Row
+
         pw.Container(
           padding: const pw.EdgeInsets.all(12),
           decoration: pw.BoxDecoration(
             color: PdfColors.grey300,
-            border: pw.Border.all(color: PdfColors.black, width: 1),
-            borderRadius: pw.BorderRadius.circular(4),
+            border: pw.Border.all(width: 1),
           ),
           child: pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
             children: [
               pw.Text(
                 "TOTAL AMOUNT",
-                style: pw.TextStyle(
-                  fontSize: 14,
-                  fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.black,
-                ),
+                style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
               ),
               pw.Text(
-                "₹ ${bill["total_amount"] ?? 0}",
+                "₹ $totalAmount",
                 style: pw.TextStyle(
                   fontSize: 18,
                   fontWeight: pw.FontWeight.bold,
-                  color: PdfColors.black,
                 ),
               ),
             ],
@@ -381,6 +382,8 @@ class BillPdfService {
       ],
     );
   }
+
+
 
   // PAYMENT STATUS
   static pw.Widget _buildPaymentStatus(Map<String, dynamic> bill) {
